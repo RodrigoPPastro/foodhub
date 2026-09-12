@@ -1,0 +1,42 @@
+<?php
+require_once __DIR__ . '/../src/Services/AuthGuard.php';
+require_once __DIR__ . '/../src/Models/Usuario.php';
+
+AuthGuard::requireMaster(); // <- exemplo de uso do contrato pro resto do time
+
+$termo = trim($_GET['busca'] ?? '');
+$usuarios = $termo !== '' ? Usuario::buscarPorNomeSubstring($termo) : [];
+?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>FOOD HUB — Consulta de Usuários</title>
+</head>
+<body>
+    <h1>Consulta de Usuários</h1>
+
+    <form method="get">
+        <input type="text" name="busca" placeholder="Pesquisar por nome" value="<?= htmlspecialchars($termo) ?>">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <table border="1" cellpadding="6">
+        <tr><th>Nome</th><th>Login</th><th>E-mail</th><th>Cadastro</th><th>Ação</th></tr>
+        <?php foreach ($usuarios as $u): ?>
+        <tr>
+            <td><?= htmlspecialchars($u['nome_completo']) ?></td>
+            <td><?= htmlspecialchars($u['login']) ?></td>
+            <td><?= htmlspecialchars($u['email']) ?></td>
+            <td><?= htmlspecialchars($u['data_cadastro']) ?></td>
+            <td>
+                <form method="post" action="excluir_usuario.php" onsubmit="return confirm('Confirma excluir este usuário?');">
+                    <input type="hidden" name="id_usuario" value="<?= (int)$u['id_usuario'] ?>">
+                    <button type="submit">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </table>
+</body>
+</html>

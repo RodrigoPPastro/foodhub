@@ -1,0 +1,23 @@
+# Dependências (se o grupo usar Composer futuramente)
+/vendor/
+composer.lock
+
+# Configuração local / segredos — NUNCA subir credencial real pro GitHub
+.env
+config/database.local.php
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Uploads de teste / arquivos temporários
+/tmp/
+/uploads/temp/
