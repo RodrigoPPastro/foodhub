@@ -101,3 +101,7 @@ php database/gerar_hash.php "SuaSenhaAqui"
 ```
 
 Copia o hash gerado e usa no `INSERT` comentado dentro de `auth_schema.sql`.
+
+## Fluxo Git e Pull Request
+
+Alterações de código devem ser feitas em branches de funcionalidade e integradas à branch principal por Pull Request após revisão.
