@@ -35,8 +35,6 @@ class AuthController
                 exit;
 
             case '2fa_pendente':
-                $_SESSION['login_validado_id'] = $resultado['usuario_id'];
-
                 header('Location: /foodhub/public/2fa.php');
                 exit;
 

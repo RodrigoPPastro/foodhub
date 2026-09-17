@@ -50,12 +50,45 @@ class SessionService
 
     public static function nomeUsuarioAtual(): ?string
     {
-        return $_SESSION['usuario_login'] ?? null;
+        return $_SESSION['usuario_nome'] ?? null;
     }
 
     public static function ehMaster(): bool
     {
         return self::perfilAtual() === 'master';
+    }
+
+    /**
+     * Estado temporário do 2FA. Nunca armazena a resposta nem seu hash.
+     */
+    public static function iniciar2faPendente(int $idUsuario, int $id2fa, string $pergunta): void
+    {
+        $_SESSION['2fa_pendente'] = [
+            'id_usuario' => $idUsuario,
+            'id_2fa' => $id2fa,
+            'pergunta' => $pergunta,
+            'tentativas' => 0,
+        ];
+    }
+
+    public static function dados2faPendente(): ?array
+    {
+        return $_SESSION['2fa_pendente'] ?? null;
+    }
+
+    public static function incrementarTentativas2fa(): int
+    {
+        if (!isset($_SESSION['2fa_pendente']['tentativas'])) {
+            return 0;
+        }
+
+        $_SESSION['2fa_pendente']['tentativas']++;
+        return (int) $_SESSION['2fa_pendente']['tentativas'];
+    }
+
+    public static function limpar2faPendente(): void
+    {
+        unset($_SESSION['2fa_pendente']);
     }
 
     public static function logout(): void

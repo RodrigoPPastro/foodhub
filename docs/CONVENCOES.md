@@ -14,7 +14,8 @@ foodhub/
 │   └── database.php        <- conexão PDO única (Database::getConnection())
 ├── src/
 │   ├── Services/            <- regras de negócio reaproveitáveis
-│   ├── Models/               <- uma classe por tabela, só SQL aqui dentro
+│   ├── Repositories/         <- acesso ao banco e SQL (uma classe por agregado/tabela)
+│   ├── Models/               <- representação de dados/constantes, sem SQL
 │   └── (cada módulo pode criar Models/Services próprios seguindo o mesmo padrão)
 ├── public/                  <- ÚNICA pasta exposta pelo servidor web (document root)
 │   ├── login.php, 2fa.php, logout.php, erro.php  (meus)
@@ -26,8 +27,9 @@ foodhub/
     └── schema.sql            <- script único e definitivo (Fernanda consolida aqui)
 ```
 
-**Regra de ouro:** cada Model só conversa com o banco (sem `echo`, sem HTML).
-Cada página em `public/` só orquestra: chama Service/Model e imprime.
+**Regra de ouro:** SQL fica nos `Repositories`; `Services` concentram regras de negócio;
+`Controllers` orquestram requisições; `public/` apresenta dados e recebe entradas.
+Models não acessam o banco.
 
 ## 2. Como proteger uma página (todo módulo deve fazer isso)
 
@@ -46,7 +48,7 @@ Depois disso, em qualquer lugar da página:
 
 ```php
 SessionService::usuarioIdAtual();   // int|null
-SessionService::nomeUsuarioAtual(); // string|null (login do usuário)
+SessionService::nomeUsuarioAtual(); // string|null (nome completo do usuário)
 SessionService::ehMaster();         // bool
 ```
 
@@ -105,3 +107,33 @@ Copia o hash gerado e usa no `INSERT` comentado dentro de `auth_schema.sql`.
 ## Fluxo Git e Pull Request
 
 Alterações de código devem ser feitas em branches de funcionalidade e integradas à branch principal por Pull Request após revisão.
+
+
+## 8. Contrato do módulo de usuários (RF06/RF07)
+
+As telas de consulta, exclusão e alteração de senha não acessam Models ou SQL diretamente.
+O fluxo adotado é:
+
+`public/ -> UsuarioController -> UsuarioService -> UsuarioRepository -> Database`
+
+- `AuthGuard::requireMaster()` protege consulta/exclusão de usuários.
+- `AuthGuard::requireComum()` protege a alteração da própria senha.
+- `UsuarioRepository` é a única camada deste fluxo responsável pelo SQL.
+- `UsuarioService` concentra as regras de negócio de RF06/RF07.
+- `UsuarioController` recebe os dados da requisição e chama o Service.
+
+## 9. Contrato de integração para os demais módulos
+
+Para obter o usuário autenticado, use `AuthGuard` e `SessionService`; não acesse `$_SESSION` diretamente.
+
+Para regras de usuário, utilize `UsuarioService`/`UsuarioController`; não faça SQL em páginas públicas.
+
+Para autenticação de segundo fator, `TwoFactorService` é a porta de entrada. O hash da resposta permanece no banco e nunca é colocado na sessão.
+
+Para registros de autenticação, `LogAcessoService` é a porta de serviço e `LogAcessoRepository` é responsável pelo SQL.
+
+### Regra para novos módulos
+
+`public -> Controller -> Service -> Repository -> Database`
+
+Um módulo novo deve seguir esse fluxo desde o início, evitando criar dívida técnica para refatorar Models depois.

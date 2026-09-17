@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . '/../src/Services/AuthGuard.php';
-require_once __DIR__ . '/../src/Models/LogAcesso.php';
+require_once __DIR__ . '/../src/Services/LogAcessoService.php';
 
 AuthGuard::requireMaster();
 
 $nome = trim($_GET['nome'] ?? '');
 $cpf  = trim($_GET['cpf'] ?? '');
 
-$registros = LogAcesso::listar($nome !== '' ? $nome : null, $cpf !== '' ? $cpf : null);
+$registros = LogAcessoService::listar($nome !== '' ? $nome : null, $cpf !== '' ? $cpf : null);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
