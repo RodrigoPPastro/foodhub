@@ -1,30 +1,21 @@
 <?php
 require_once __DIR__ . '/../src/Services/AuthGuard.php';
 require_once __DIR__ . '/../src/Services/SessionService.php';
-require_once __DIR__ . '/../src/Services/PasswordService.php';
-require_once __DIR__ . '/../src/Models/Usuario.php';
+require_once __DIR__ . '/../src/Controllers/UsuarioController.php';
 
-AuthGuard::requireComum(); // só o próprio usuário comum altera a própria senha
+AuthGuard::requireComum();
 
 $mensagem = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $senhaAtual = $_POST['senha_atual'] ?? '';
-    $novaSenha  = $_POST['nova_senha'] ?? '';
-    $confirmar  = $_POST['confirmar_senha'] ?? '';
+    $resultado = UsuarioController::alterarSenha(
+        (int) SessionService::usuarioIdAtual(),
+        $_POST['senha_atual'] ?? '',
+        $_POST['nova_senha'] ?? '',
+        $_POST['confirmar_senha'] ?? ''
+    );
 
-    $usuario = Usuario::buscarPorId(SessionService::usuarioIdAtual());
-
-    if (!PasswordService::verify($senhaAtual, $usuario['senha_hash'])) {
-        $mensagem = 'Senha atual incorreta.';
-    } elseif (strlen($novaSenha) !== 8 || !ctype_alpha($novaSenha)) {
-        $mensagem = 'A nova senha deve ter exatamente 8 caracteres alfabéticos.';
-    } elseif ($novaSenha !== $confirmar) {
-        $mensagem = 'A confirmação não confere com a nova senha.';
-    } else {
-        Usuario::atualizarSenha($usuario['id_usuario'], PasswordService::hash($novaSenha));
-        $mensagem = 'Senha alterada com sucesso.';
-    }
+    $mensagem = $resultado['mensagem'];
 }
 ?>
 <!DOCTYPE html>
@@ -37,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Alterar Senha</h1>
 
     <?php if ($mensagem): ?>
-        <p><?= htmlspecialchars($mensagem) ?></p>
+        <p><?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?></p>
     <?php endif; ?>
 
     <form method="post">

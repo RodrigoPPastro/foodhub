@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../src/Services/SessionService.php';
 require_once __DIR__ . '/../src/Services/TwoFactorService.php';
-require_once __DIR__ . '/../src/Models/Usuario.php';
+require_once __DIR__ . '/../src/Services/UsuarioService.php';
 
 SessionService::start();
 
@@ -17,14 +17,12 @@ $resultado = TwoFactorService::validarResposta($resposta);
 switch ($resultado['status']) {
 
     case 'sucesso':
-        $usuario = Usuario::buscarPorId($resultado['usuario_id']);
+        $usuario = UsuarioService::buscarPorId($resultado['usuario_id']);
 
         if ($usuario === null) {
             header('Location: /foodhub/public/erro.php?tipo=interno');
             exit;
         }
-
-        unset($_SESSION['login_validado_id']);
 
         SessionService::autenticarUsuario($usuario);
 
@@ -36,8 +34,6 @@ switch ($resultado['status']) {
         exit;
 
     case 'bloqueado':
-        unset($_SESSION['login_validado_id']);
-
         header('Location: /foodhub/public/login.php?erro=2fa_bloqueado');
         exit;
 

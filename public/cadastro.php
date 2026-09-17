@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../src/Services/SessionService.php';
-require_once __DIR__ . '/../src/Models/Autenticacao2FA.php';
 
 SessionService::start();
 $erros = SessionService::getFlash('cadastro_erros') ?? [];

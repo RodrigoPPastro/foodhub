@@ -2,8 +2,8 @@
 require_once __DIR__ . '/../src/Services/SessionService.php';
 require_once __DIR__ . '/../src/Services/ValidationService.php';
 require_once __DIR__ . '/../src/Services/PasswordService.php';
-require_once __DIR__ . '/../src/Models/Usuario.php';
-require_once __DIR__ . '/../src/Models/Autenticacao2FA.php';
+require_once __DIR__ . '/../src/Services/UsuarioService.php';
+require_once __DIR__ . '/../src/Services/CadastroService.php';
 
 SessionService::start();
 
@@ -46,12 +46,12 @@ if ($dados['nome_completo'] !== '' && !ValidationService::validarNome($dados['no
 }
 if ($dados['cpf'] !== '' && !ValidationService::validarCPF($dados['cpf'])) {
     $erros[] = 'CPF inválido (dígito verificador não confere).';
-} elseif ($dados['cpf'] !== '' && Usuario::cpfJaExiste($dados['cpf'])) {
+} elseif ($dados['cpf'] !== '' && UsuarioService::cpfJaExiste($dados['cpf'])) {
     $erros[] = 'Este CPF já está cadastrado.';
 }
 if ($dados['email'] !== '' && !ValidationService::validarEmail($dados['email'])) {
     $erros[] = 'E-mail inválido.';
-} elseif ($dados['email'] !== '' && Usuario::emailJaExiste($dados['email'])) {
+} elseif ($dados['email'] !== '' && UsuarioService::emailJaExiste($dados['email'])) {
     $erros[] = 'Este e-mail já está cadastrado.';
 }
 if ($dados['telefone_celular'] !== '' && !ValidationService::validarTelefone($dados['telefone_celular'])) {
@@ -63,7 +63,7 @@ if ($dados['telefone_fixo'] !== '' && !ValidationService::validarTelefone($dados
 if ($dados['login'] !== '') {
     if (!ValidationService::validarLogin($dados['login'])) {
         $erros[] = 'Login deve ter exatamente 6 caracteres alfabéticos.';
-    } elseif (Usuario::loginJaExiste($dados['login'])) {
+    } elseif (UsuarioService::loginJaExiste($dados['login'])) {
         $erros[] = 'Este login já está em uso.';
     }
 }
@@ -84,16 +84,17 @@ if (!empty($erros)) {
     exit;
 }
 
-// --- Tudo certo: grava usuário + hash da senha + respostas do 2FA ---
-$dados['senha_hash'] = PasswordService::hash($senha);
-$idUsuario = Usuario::criar($dados);
-
-$perguntas = Autenticacao2FA::PERGUNTAS;
-$mapaPerguntaResposta = [];
-foreach ($perguntas as $i => $pergunta) {
-    $mapaPerguntaResposta[$pergunta] = $respostas2fa[$i];
+// --- Tudo certo: usuário + 2FA são gravados em uma única transação ---
+try {
+    CadastroService::cadastrar($dados, $senha, $respostas2fa);
+} catch (Throwable $e) {
+    SessionService::setFlash('cadastro_erros', [
+        'Não foi possível concluir o cadastro. Tente novamente.'
+    ]);
+    SessionService::setFlash('cadastro_valores', $dados);
+    header('Location: /foodhub/public/cadastro.php');
+    exit;
 }
-Autenticacao2FA::salvarRespostas($idUsuario, $mapaPerguntaResposta);
 
 SessionService::setFlash('login_mensagem', 'Cadastro realizado com sucesso! Faça login para continuar.');
 header('Location: /foodhub/public/login.php');
