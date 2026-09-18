@@ -1,139 +1,196 @@
 # FOOD HUB — Convenções Técnicas e Contrato de Integração
 ### (Rodrigo — Arquitetura Técnica e Autenticação)
 
-Este documento existe pra todo mundo do grupo conseguir plugar o próprio
-módulo sem precisar entender os detalhes internos da autenticação.
+Este documento define as convenções para que todos os módulos do grupo sigam a mesma arquitetura e consigam integrar sem depender dos detalhes internos de outro módulo.
 
 ---
 
-## 1. Estrutura de pastas proposta
+## 1. Estrutura de pastas
 
-```
+```text
 foodhub/
 ├── config/
-│   └── database.php        <- conexão PDO única (Database::getConnection())
+│   └── database.php              <- conexão PDO única
 ├── src/
-│   ├── Services/            <- regras de negócio reaproveitáveis
-│   ├── Repositories/         <- acesso ao banco e SQL (uma classe por agregado/tabela)
-│   ├── Models/               <- representação de dados/constantes, sem SQL
-│   └── (cada módulo pode criar Models/Services próprios seguindo o mesmo padrão)
-├── public/                  <- ÚNICA pasta exposta pelo servidor web (document root)
-│   ├── login.php, 2fa.php, logout.php, erro.php  (meus)
-│   ├── dashboard.php         (Dandara)
-│   ├── cardapio.php, estoque.php  (Fernanda)
-│   ├── pedidos.php            (Pedro)
-│   └── financeiro.php         (Lucas)
+│   ├── Controllers/              <- entrada/orquestração das requisições
+│   ├── Services/                 <- regras de negócio
+│   ├── Repositories/             <- acesso ao banco e SQL
+│   └── Models/                   <- representação de entidades/dados
+├── public/                       <- páginas e endpoints HTTP
+│   ├── login.php
+│   ├── 2fa.php
+│   ├── recuperar_senha.php
+│   ├── recuperar_senha_process.php
+│   ├── redefinir_senha.php
+│   ├── redefinir_senha_process.php
+│   ├── dashboard.php
+│   └── ...
 └── database/
-    └── schema.sql            <- script único e definitivo (Fernanda consolida aqui)
+    └── auth_schema.sql           <- autenticação; Fernanda consolida no SQL oficial
 ```
 
-**Regra de ouro:** SQL fica nos `Repositories`; `Services` concentram regras de negócio;
-`Controllers` orquestram requisições; `public/` apresenta dados e recebe entradas.
-Models não acessam o banco.
+**Regra de ouro:** o `Repository` é responsável pelo SQL/acesso a dados; `Service` concentra as regras de negócio; `Controller` orquestra a requisição; páginas em `public/` cuidam da apresentação/entrada HTTP.
 
-## 2. Como proteger uma página (todo módulo deve fazer isso)
+---
+
+## 2. Sessão e proteção de páginas
+
+Todo módulo deve usar `SessionService` e `AuthGuard` para saber quem está autenticado e qual é o perfil. Não ler/gravar `$_SESSION` diretamente nas páginas ou módulos.
+
+Exemplo:
 
 ```php
-<?php
 require_once __DIR__ . '/../src/Services/AuthGuard.php';
 
-AuthGuard::requireLogin();   // qualquer usuário logado (ex.: tela de cardápio)
+AuthGuard::requireLogin();
 // ou
-AuthGuard::requireMaster();  // só master (ex.: estoque, financeiro, pedidos, log)
-// ou
-AuthGuard::requireComum();   // só usuário comum (ex.: alterar a própria senha)
+AuthGuard::requireMaster();
+// ou, quando aplicável,
+AuthGuard::requireComum();
 ```
 
-Depois disso, em qualquer lugar da página:
+Para dados do usuário autenticado:
 
 ```php
-SessionService::usuarioIdAtual();   // int|null
-SessionService::nomeUsuarioAtual(); // string|null (nome completo do usuário)
-SessionService::ehMaster();         // bool
+SessionService::usuarioIdAtual();
+SessionService::nomeUsuarioAtual();
+SessionService::ehMaster();
 ```
 
-Isso já resolve o **RF10** (mostrar login no canto superior direito) — cada
-página só precisa chamar `SessionService::nomeUsuarioAtual()` no cabeçalho.
+---
 
-## 3. Tabelas que eu (Rodrigo) já criei e mantenho
+## 3. Tabelas de autenticação
+
+O módulo de autenticação trabalha com:
 
 - `usuario`
 - `autenticacao_2fa`
 - `log_acesso`
 
-Se seu módulo precisa de uma FK pra `usuario` (ex.: `pedido.id_usuario_cliente`,
-`fechamento_caixa.id_usuario_responsavel`), é só referenciar `usuario.id_usuario`
-normalmente — a tabela já existe a partir da Semana 1/2.
+Qualquer outro módulo que precise relacionar dados ao usuário deve usar `usuario.id_usuario` como referência.
 
-## 4. Cadastro de usuário (RF02) — ponto em aberto
+---
 
-Na divisão de tarefas, **ninguém ficou com o back-end do RF02** (Dandara tem a
-tela, mas não a gravação/validação). Como isso usa `PasswordService::hash()` e
-grava em `autenticacao_2fa` (que são meus), vou assumir esse back-end também,
-a não ser que o grupo decida diferente — avisar na próxima reunião.
+## 4. Cadastro de usuário (RF02)
+
+O cadastro de usuário comum utiliza as mesmas regras de segurança do módulo de autenticação. A senha é transformada em hash antes de ser persistida e as respostas das perguntas de segurança também são armazenadas com hash.
+
+---
 
 ## 5. Convenções de código
 
-- **Nomenclatura:** classes em `PascalCase`, métodos/variáveis em `camelCase`,
-  nomes de tabelas/colunas em `snake_case` (já seguido no schema).
-- **Banco:** sempre PDO com *prepared statements* (nunca concatenar SQL com
-  variável do usuário — proteção contra SQL Injection).
-- **Senhas/respostas do 2FA:** sempre via `PasswordService` — nunca
-  `md5()`, nunca texto puro.
-- **Sessão:** sempre via `SessionService`/`AuthGuard` — não ler `$_SESSION`
-  direto fora dessas classes, pra manter uma fonte única de verdade.
-- **Erros:** nunca usar `alert()` nativo (regra do enunciado); Dandara define
-  o padrão visual de modal/toast e cada módulo reaproveita o mesmo componente.
-- **Git:** 1 branch por pessoa/módulo (`feature/estoque`, `feature/pedidos`...),
-  merge na `main` só depois de revisão de outra pessoa.
+- Classes em `PascalCase` e métodos/variáveis em `camelCase`.
+- Tabelas e colunas do banco em `snake_case`.
+- SQL sempre com PDO e *prepared statements*.
+- Senhas e respostas de segurança somente por meio do `PasswordService`.
+- Sessão somente por `SessionService`/`AuthGuard`.
+- Feedback visual sem `alert()` nativo; o padrão visual será definido no front-end do grupo.
+- Cada integrante trabalha em sua branch e o merge em `main` ocorre somente após revisão de outra pessoa.
 
-## 6. Sobre o script SQL oficial
+---
 
-Este pacote traz `database/auth_schema.sql` só com as 3 tabelas de
-autenticação — **a Fernanda consolida isso no script único do projeto**,
-junto com as tabelas do restante do DER (produto, insumo, pedido, mesa,
-pagamento etc.), pra não termos dois scripts divergentes.
+## 6. Recuperação de senha (RF28)
 
-## 7. Criando o usuário master (exigência do enunciado)
+A recuperação de senha foi adicionada ao módulo de autenticação após a necessidade identificada pelo professor.
 
-O master é criado direto no banco, não pela tela de cadastro. Passo a passo:
+### Objetivo
 
+Permitir que o usuário comum que esqueceu a senha recupere o acesso validando uma das perguntas de segurança previamente cadastradas e, depois, cadastrando uma nova senha.
+
+### Fluxo
+
+```text
+LOGIN
+  ↓
+Esqueci minha senha
+  ↓
+recuperar_senha.php
+  ↓
+informa login
+  ↓
+pergunta de segurança
+  ↓
+resposta
+  ├─ incorreta → conta tentativa
+  │                └─ 3ª tentativa → bloqueia o fluxo
+  └─ correta → autorização temporária de 5 minutos
+                 ↓
+          redefinir_senha.php
+                 ↓
+          nova senha + confirmação
+                 ↓
+          PasswordService::hash()
+                 ↓
+          UsuarioRepository::atualizarSenha()
+                 ↓
+          limpa estado da recuperação
+                 ↓
+          retorna ao login
+                 ↓
+          login normal + 2FA
 ```
+
+### Regras
+
+- Destinada ao usuário comum.
+- O estado de recuperação é separado do estado do 2FA do login.
+- A resposta da pergunta nunca é armazenada na sessão.
+- O hash da resposta permanece no banco em `autenticacao_2fa`.
+- São permitidas no máximo 3 tentativas.
+- Após resposta correta, a autorização para redefinir a senha dura 5 minutos.
+- A autorização é removida ao expirar ou após o uso.
+- A nova senha é armazenada somente como hash.
+- Após a redefinição, o sistema não autentica automaticamente o usuário.
+- O usuário deve entrar novamente e concluir o 2FA normal.
+
+### Arquivos
+
+```text
+public/recuperar_senha.php
+public/recuperar_senha_process.php
+public/redefinir_senha.php
+public/redefinir_senha_process.php
+src/Controllers/RecuperacaoSenhaController.php
+src/Services/RecuperacaoSenhaService.php
+src/Services/SessionService.php
+```
+
+A implementação reutiliza `UsuarioRepository`, `Autenticacao2FARepository` e `PasswordService`, sem criar uma nova tabela no banco.
+
+---
+
+## 7. Testes realizados do RF28
+
+O fluxo foi validado manualmente com um usuário comum existente no banco.
+
+- início da recuperação por login;
+- exibição e resposta da pergunta de segurança;
+- resposta correta;
+- 1ª, 2ª e 3ª tentativas incorretas;
+- bloqueio após a 3ª tentativa;
+- autorização temporária de 5 minutos;
+- redefinição da senha;
+- retorno ao login;
+- login com a senha nova;
+- 2FA normal após a recuperação;
+- acesso ao dashboard.
+
+---
+
+## 8. Script SQL oficial
+
+O `auth_schema.sql` contém as tabelas do módulo de autenticação. O script SQL definitivo do projeto deve ser consolidado pela responsável pelo banco, junto com as demais tabelas do DER, evitando scripts divergentes.
+
+---
+
+## 9. Usuário master
+
+O usuário master é criado diretamente no banco, não pela tela de cadastro.
+
+Para gerar um hash de senha:
+
+```text
 php database/gerar_hash.php "SuaSenhaAqui"
 ```
 
-Copia o hash gerado e usa no `INSERT` comentado dentro de `auth_schema.sql`.
-
-## Fluxo Git e Pull Request
-
-Alterações de código devem ser feitas em branches de funcionalidade e integradas à branch principal por Pull Request após revisão.
-
-
-## 8. Contrato do módulo de usuários (RF06/RF07)
-
-As telas de consulta, exclusão e alteração de senha não acessam Models ou SQL diretamente.
-O fluxo adotado é:
-
-`public/ -> UsuarioController -> UsuarioService -> UsuarioRepository -> Database`
-
-- `AuthGuard::requireMaster()` protege consulta/exclusão de usuários.
-- `AuthGuard::requireComum()` protege a alteração da própria senha.
-- `UsuarioRepository` é a única camada deste fluxo responsável pelo SQL.
-- `UsuarioService` concentra as regras de negócio de RF06/RF07.
-- `UsuarioController` recebe os dados da requisição e chama o Service.
-
-## 9. Contrato de integração para os demais módulos
-
-Para obter o usuário autenticado, use `AuthGuard` e `SessionService`; não acesse `$_SESSION` diretamente.
-
-Para regras de usuário, utilize `UsuarioService`/`UsuarioController`; não faça SQL em páginas públicas.
-
-Para autenticação de segundo fator, `TwoFactorService` é a porta de entrada. O hash da resposta permanece no banco e nunca é colocado na sessão.
-
-Para registros de autenticação, `LogAcessoService` é a porta de serviço e `LogAcessoRepository` é responsável pelo SQL.
-
-### Regra para novos módulos
-
-`public -> Controller -> Service -> Repository -> Database`
-
-Um módulo novo deve seguir esse fluxo desde o início, evitando criar dívida técnica para refatorar Models depois.
+Depois, utilizar o hash gerado no `INSERT` correspondente do banco.

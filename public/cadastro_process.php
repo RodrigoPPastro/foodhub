@@ -55,10 +55,10 @@ if ($dados['email'] !== '' && !ValidationService::validarEmail($dados['email']))
     $erros[] = 'Este e-mail já está cadastrado.';
 }
 if ($dados['telefone_celular'] !== '' && !ValidationService::validarTelefone($dados['telefone_celular'])) {
-    $erros[] = 'Telefone celular fora do formato XX-XXXXXXXXX.';
+    $erros[] = 'Telefone celular fora do formato (+55)XX-XXXXXXXXX.';
 }
 if ($dados['telefone_fixo'] !== '' && !ValidationService::validarTelefone($dados['telefone_fixo'])) {
-    $erros[] = 'Telefone fixo fora do formato XX-XXXXXXXX.';
+    $erros[] = 'Telefone fixo fora do formato (+55)XX-XXXXXXXX.';
 }
 if ($dados['login'] !== '') {
     if (!ValidationService::validarLogin($dados['login'])) {

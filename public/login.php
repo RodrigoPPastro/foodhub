@@ -4,7 +4,7 @@ SessionService::start();
 
 // Se já está logado, não faz sentido ver a tela de login de novo.
 if (SessionService::estaAutenticado()) {
-    header('Location: /public/dashboard.php'); // ajustar quando a Dandara criar o dashboard
+    header('Location: /foodhub/public/dashboard.php'); // ajustar quando a Dandara criar o dashboard
     exit;
 }
 
@@ -38,6 +38,10 @@ $erro = $_GET['erro'] ?? null;
         <button type="submit">ENTRAR</button>
         <button type="reset">LIMPAR</button>
     </form>
+
+    <p>
+        <a href="recuperar_senha.php">Esqueci minha senha</a>
+    </p>
 
     <p>Novo por aqui? <a href="cadastro.php">Cadastre-se</a></p>
 </body>
