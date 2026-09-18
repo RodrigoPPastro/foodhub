@@ -83,9 +83,15 @@ $stmt->execute(['Maria Souza', 'mariax', PasswordService::hash('senha123'), 'com
 $idUsuario = (int) $pdo->lastInsertId();
 
 Autenticacao2FARepository::salvarRespostas($idUsuario, [
-    'Qual o nome da sua mãe?' => 'Joana',
-    'Qual a data do seu nascimento?' => '01/01/2000',
-    'Qual o CEP do seu endereço?' => '20000-000',
+    'Qual o nome da sua mãe?' => PasswordService::hash(
+        PasswordService::normalizarResposta('Joana')
+    ),
+    'Qual a data do seu nascimento?' => PasswordService::hash(
+        PasswordService::normalizarResposta('01/01/2000')
+    ),
+    'Qual o CEP do seu endereço?' => PasswordService::hash(
+        PasswordService::normalizarResposta('20000-000')
+    ),
 ]);
 
 $usuario = UsuarioRepository::buscarPorLogin('mariax');
