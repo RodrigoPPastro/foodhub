@@ -1,0 +1,69 @@
+/* =========================================================
+   FOOD HUB — Design Tokens
+   Tema claro é o padrão (fundo creme). O tema escuro (carvão)
+   fica disponível via [data-theme="dark"], trocado pelo botão
+   de alternância em main.js e lembrado em localStorage.
+   ========================================================= */
+
+:root {
+  /* Cor de marca — fixas nos dois temas */
+  --fh-red: #c1272d;
+  --fh-red-dark: #8c1a1f;
+  --fh-gold: #b8860b;
+  --fh-gold-soft: #d4a441;
+
+  /* Tema claro (padrão) */
+  --fh-bg: #faf3e6;         /* creme claro — nunca branco puro */
+  --fh-surface: #ffffff;
+  --fh-text: #241d16;
+  --fh-text-dim: #6b5f4f;
+  --fh-line: rgba(36, 29, 22, 0.12);
+
+  /* Tipografia */
+  --fh-font-display: "Oswald", "Arial Narrow", sans-serif;
+  --fh-font-body: "Source Sans 3", system-ui, sans-serif;
+
+  /* Bootstrap overrides */
+  --bs-primary: var(--fh-red);
+  --bs-primary-rgb: 193, 39, 45;
+  --bs-body-font-family: var(--fh-font-body);
+  --bs-body-bg: var(--fh-bg);
+  --bs-body-color: var(--fh-text);
+  --bs-link-color: var(--fh-gold);
+  --bs-link-hover-color: var(--fh-gold-soft);
+  --bs-border-radius: 0.375rem;
+}
+
+[data-theme="dark"] {
+  --fh-gold: #d4a441;
+  --fh-bg: #17130f;
+  --fh-surface: #211b16;
+  --fh-text: #f6efe2;
+  --fh-text-dim: #cdc2af;
+  --fh-line: rgba(246, 239, 226, 0.14);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--fh-red);
+  --bs-btn-border-color: var(--fh-red);
+  --bs-btn-hover-bg: var(--fh-red-dark);
+  --bs-btn-hover-border-color: var(--fh-red-dark);
+  --bs-btn-active-bg: var(--fh-red-dark);
+  --bs-btn-active-border-color: var(--fh-red-dark);
+  --bs-btn-focus-shadow-rgb: 212, 164, 65;
+}
+
+.form-control {
+  background-color: var(--fh-surface);
+  border-color: var(--fh-line);
+  color: var(--fh-text);
+}
+.form-control:focus {
+  background-color: var(--fh-surface);
+  color: var(--fh-text);
+  border-color: var(--fh-gold);
+  box-shadow: 0 0 0 0.2rem rgba(212, 164, 65, 0.25);
+}
+.form-control::placeholder {
+  color: var(--fh-text-dim);
+}
