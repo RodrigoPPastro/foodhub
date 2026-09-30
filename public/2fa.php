@@ -58,7 +58,7 @@ $erro = $_GET['erro'] ?? null;
             padding: 2.25rem 2rem;
             background: var(--fh-card);
             border: 1px solid var(--fh-border);
-            border-top: 4px solid var(--fh-gold);
+            border-top: 4px solid var(--fh-red);
             border-radius: .5rem;
         }
 
@@ -109,7 +109,7 @@ $erro = $_GET['erro'] ?? null;
             background: var(--fh-card);
             color: var(--fh-text);
             border: 1px solid var(--fh-border);
-            border-radius: 2rem;
+            border-radius: .35rem;
             padding: .35rem .9rem;
             font-size: .9rem;
         }
