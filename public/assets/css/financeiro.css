@@ -1,0 +1,77 @@
+/* FOOD HUB — telas do módulo financeiro. Paleta idêntica à do login (vermelho/dourado/preto). */
+:root {
+    --fh-vermelho: #b3161b;
+    --fh-vermelho-escuro: #8f1015;
+    --fh-dourado: #c99a2e;
+    --fh-fundo: #f6efe0;
+    --fh-cartao: #fffaf0;
+    --fh-texto: #1a1a1a;
+    --fh-borda: #e3d6b8;
+    --fh-suave: #6b6252;
+}
+[data-bs-theme="dark"] {
+    --fh-fundo: #141212;
+    --fh-cartao: #1f1b1b;
+    --fh-texto: #f3ead7;
+    --fh-borda: #3a3232;
+    --fh-suave: #b8ac94;
+}
+
+body { font-family: 'Source Sans 3', system-ui, sans-serif; background: var(--fh-fundo); color: var(--fh-texto); min-height: 100vh; }
+h1, h2, h3, .fh-titulo { font-family: 'Oswald', sans-serif; font-weight: 600; }
+a { color: var(--fh-vermelho); }
+[data-bs-theme="dark"] a { color: var(--fh-dourado); }
+
+/* Navegação */
+.fh-nav { background: #111; border-bottom: 3px solid var(--fh-dourado); }
+.fh-nav .navbar-brand { color: var(--fh-dourado); letter-spacing: .06em; }
+.fh-nav .nav-link { color: #eadfc4; }
+.fh-nav .nav-link:hover, .fh-nav .nav-link.active { color: #fff; box-shadow: inset 0 -3px 0 var(--fh-vermelho); }
+.fh-nav .navbar-toggler { border-color: #555; filter: invert(1); }
+.fh-usuario { color: #eadfc4; }
+
+/* Botões */
+.btn-fh { background: var(--fh-vermelho); border-color: var(--fh-vermelho); color: #fff; font-family: 'Oswald', sans-serif; letter-spacing: .04em; }
+.btn-fh:hover, .btn-fh:focus { background: var(--fh-vermelho-escuro); border-color: var(--fh-vermelho-escuro); color: #fff; }
+.btn-fh:focus-visible, .form-control:focus, .form-select:focus { box-shadow: 0 0 0 .2rem rgba(201, 154, 46, .45); border-color: var(--fh-dourado); }
+.btn-fh-ouro { background: var(--fh-dourado); border-color: var(--fh-dourado); color: #1a1a1a; font-weight: 600; }
+.btn-fh-ouro:hover { background: #b08622; border-color: #b08622; color: #1a1a1a; }
+
+/* Cartões e KPIs */
+.fh-cartao { background: var(--fh-cartao); border: 1px solid var(--fh-borda); border-top: 4px solid var(--fh-vermelho); border-radius: .5rem; padding: 1.1rem 1.25rem; height: 100%; }
+.fh-cartao.ouro { border-top-color: var(--fh-dourado); }
+.fh-kpi-rotulo { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: var(--fh-suave); }
+.fh-kpi-valor { font-family: 'Oswald', sans-serif; font-size: 2rem; line-height: 1.15; }
+.fh-kpi-detalhe { font-size: .85rem; color: var(--fh-suave); }
+.fh-kpi-alerta .fh-kpi-valor { color: var(--fh-vermelho); }
+[data-bs-theme="dark"] .fh-kpi-alerta .fh-kpi-valor { color: #ff6b6f; }
+
+/* Gráficos */
+.fh-grafico { position: relative; height: 260px; }
+.fh-vazio { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; color: var(--fh-suave); text-align: center; }
+.fh-grafico.sem-dados .fh-vazio { display: flex; }
+.fh-grafico.sem-dados canvas { visibility: hidden; }
+
+/* Tabelas e formulários */
+.table { --bs-table-bg: transparent; --bs-table-color: var(--fh-texto); --bs-table-border-color: var(--fh-borda); }
+.table thead th { font-family: 'Oswald', sans-serif; font-weight: 500; letter-spacing: .04em; border-bottom: 2px solid var(--fh-dourado); white-space: nowrap; }
+.table td.num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-responsive { border-radius: .5rem; }
+.form-control, .form-select { background-color: var(--fh-fundo); border-color: var(--fh-borda); color: var(--fh-texto); }
+.form-control:focus, .form-select:focus { background-color: var(--fh-fundo); color: var(--fh-texto); }
+.nav-tabs { border-bottom-color: var(--fh-borda); }
+.nav-tabs .nav-link { color: var(--fh-texto); }
+.nav-tabs .nav-link.active { background: var(--fh-cartao); color: var(--fh-vermelho); border-color: var(--fh-borda) var(--fh-borda) var(--fh-cartao); font-weight: 600; }
+.progress { height: .6rem; background: var(--fh-borda); }
+.progress-bar { background: var(--fh-vermelho); }
+.badge-prev { background: var(--fh-vermelho); }
+.badge-ok { background: #2e7d46; }
+.modal-content, .toast { background: var(--fh-cartao); color: var(--fh-texto); border: 1px solid var(--fh-borda); }
+.toast-fh-erro { border-left: 5px solid var(--fh-vermelho); }
+.toast-fh-ok   { border-left: 5px solid #2e7d46; }
+.toast-fh-info { border-left: 5px solid var(--fh-dourado); }
+
+@media (max-width: 575.98px) {
+    .fh-kpi-valor { font-size: 1.6rem; }
+    .fh-grafico { height: 220px; }
+}

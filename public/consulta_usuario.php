@@ -16,6 +16,13 @@ $usuarios = $termo !== '' ? UsuarioController::consultar($termo) : [];
 <body>
     <h1>Consulta de Usuários</h1>
 
+    <?php if ($erroPdf = SessionService::getFlash('erro_pdf')): ?>
+        <p role="alert"><strong><?= htmlspecialchars($erroPdf, ENT_QUOTES, 'UTF-8') ?></strong></p>
+    <?php endif; ?>
+
+    <!-- RF26 (Desafio Plus): exportar lista completa de usuários em PDF -->
+    <p><a href="usuarios_pdf.php" download>Exportar lista de usuários (PDF)</a></p>
+
     <form method="get">
         <input type="text" name="busca" placeholder="Pesquisar por nome"
                value="<?= htmlspecialchars($termo, ENT_QUOTES, 'UTF-8') ?>">
