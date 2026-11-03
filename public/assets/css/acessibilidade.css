@@ -1,0 +1,131 @@
+/* ============================================================
+   FOOD HUB — Barra de Acessibilidade (RF27)
+   Prefixo "fh-ac-" em tudo, para não colidir com o CSS das
+   outras telas (fh-card, fh-tema, etc.).
+   ============================================================ */
+
+/* ---------- A barra em si ----------
+   Medidas em px (e não rem) de propósito: a barra não deve crescer
+   junto com a fonte da página, senão sairia da tela no maior nível. */
+#fh-ac-barra {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;               /* o botão de tema da Dandara fica no topo */
+    z-index: 2147483000;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100vw - 24px);
+    padding: 6px 8px;
+    background: #1A1412;
+    color: #F3EBDD;
+    border: 2px solid #C9A227;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+    font: 600 14px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+#fh-ac-barra button {
+    min-width: 40px;            /* alvo de toque confortável */
+    min-height: 40px;
+    padding: 0 10px;
+    background: #2B2321;
+    color: #F3EBDD;
+    border: 1px solid #C9A227;
+    border-radius: 6px;
+    font: inherit;
+    cursor: pointer;
+}
+
+#fh-ac-barra button:hover:not(:disabled) { background: #3A302B; }
+
+#fh-ac-barra button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+/* Contraste ligado: o botão fica destacado (e aria-pressed informa o leitor de tela). */
+#fh-ac-barra button[aria-pressed="true"] {
+    background: #C9A227;
+    color: #1A1412;
+}
+
+/* Foco visível para quem navega só pelo teclado (Tab). */
+#fh-ac-barra button:focus-visible {
+    outline: 3px solid #FFFFFF;
+    outline-offset: 2px;
+}
+
+#fh-ac-status {
+    padding: 0 4px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   MODO ALTO CONTRASTE
+   Ativado pela classe .fh-ac-contraste no <html> (via JavaScript).
+
+   Por que seletores genéricos com !important, e não variáveis CSS?
+   As telas atuais usam nomes de variáveis diferentes (--fh-bg numa,
+   --fh-fundo noutra). Sobrescrever por elemento funciona em qualquer
+   tela, inclusive nas que ainda vão ser criadas.
+   ============================================================ */
+
+html.fh-ac-contraste {
+    color-scheme: dark;         /* campos, selects e scrollbar nativos escuros */
+}
+
+html.fh-ac-contraste body,
+html.fh-ac-contraste body * {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border-color: #FFFFFF !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* Links: amarelo e sublinhado, para não depender só da cor. */
+html.fh-ac-contraste body a,
+html.fh-ac-contraste body a * {
+    color: #FFFF00 !important;
+    text-decoration: underline !important;
+}
+
+/* Botões e campos: borda grossa para delimitar bem a área clicável. */
+html.fh-ac-contraste body button,
+html.fh-ac-contraste body input,
+html.fh-ac-contraste body select,
+html.fh-ac-contraste body textarea {
+    border: 2px solid #FFFFFF !important;
+}
+
+html.fh-ac-contraste body ::placeholder {
+    color: #D0D0D0 !important;
+    opacity: 1;
+}
+
+/* Logo e imagens: fundo branco garante legibilidade de arte escura. */
+html.fh-ac-contraste body img {
+    background-color: #FFFFFF !important;
+    border-radius: 4px;
+}
+
+/* Foco do teclado bem visível. */
+html.fh-ac-contraste body :focus-visible {
+    outline: 3px solid #FFFF00 !important;
+    outline-offset: 2px !important;
+}
+
+/* A barra mantém o próprio visual no contraste.
+   O seletor com #id é mais específico e vence a regra genérica acima. */
+html.fh-ac-contraste #fh-ac-barra {
+    background-color: #000000 !important;
+    border: 2px solid #FFFF00 !important;
+}
+
+html.fh-ac-contraste #fh-ac-barra button[aria-pressed="true"] {
+    background-color: #FFFF00 !important;
+    color: #000000 !important;
+}
