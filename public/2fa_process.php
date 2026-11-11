@@ -25,6 +25,8 @@ switch ($resultado['status']) {
         }
 
         SessionService::autenticarUsuario($usuario);
+        // Janela de avisos (estoque/contas): abre uma vez, logo depois do login do Master
+        $_SESSION['mostrar_avisos'] = ($usuario['perfil'] === 'master');
 
         header('Location: /foodhub/public/dashboard.php');
         exit;

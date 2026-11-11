@@ -179,7 +179,14 @@ O fluxo foi validado manualmente com um usuário comum existente no banco.
 
 ## 8. Script SQL oficial
 
-O `auth_schema.sql` contém as tabelas do módulo de autenticação. O script SQL definitivo do projeto deve ser consolidado pela responsável pelo banco, junto com as demais tabelas do DER, evitando scripts divergentes.
+O script definitivo é `database/foodhub_completo.sql` (todas as tabelas do DER + dados iniciais; pode ser reexecutado). O `auth_schema.sql` fica apenas como referência histórica do módulo de autenticação. `database/seed_demo.php` gera pedidos de demonstração.
+
+## 8.1 Módulos de Cardápio/Estoque e Pedidos
+
+Seguem as mesmas camadas (página → API → Controller → Service → Repository). Contrato das APIs: `{sucesso, dados|mensagem}`; POST exige `Content-Type: application/json` e `X-Requested-With: FoodHub`. Regras de negócio ficam nos Services; as telas só exibem o que o servidor permite (ex.: botões de status vêm do campo `proximos`). Veja o mapa de módulos no `README.md`.
+
+### Contas a pagar/receber
+`ContaService` concentra as regras (tabela `conta_financeira`). O repasse de pedidos de plataforma é gerado por `PedidoService::receberExterno` (e por autocorreção ao listar), cancelado junto com o pedido; entrada de estoque pode gerar conta a pagar (`gerar_conta` em `InsumoService::movimentar`, na mesma transação). Comissão e prazo ficam em `canal_venda`.
 
 ---
 

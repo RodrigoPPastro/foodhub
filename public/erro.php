@@ -4,6 +4,7 @@ $tipo = $_GET['tipo'] ?? 'generico';
 $mensagens = [
     'conexao'        => 'Não foi possível conectar ao sistema no momento. Tente novamente em instantes.',
     'acesso_negado'  => 'Você não tem permissão para acessar esta página.',
+    'sem_permissoes' => 'Seu usuário ainda não tem nenhuma tela liberada. Peça ao administrador para definir suas permissões.',
     '2fa_ausente'    => 'Não foi possível validar sua autenticação. Contate o suporte.',
     'generico'       => 'Ocorreu um erro inesperado.',
 ];
@@ -20,6 +21,6 @@ $mensagem = $mensagens[$tipo] ?? $mensagens['generico'];
 <body>
     <h1>Ops!</h1>
     <p><?= htmlspecialchars($mensagem) ?></p>
-    <a href="/public/login.php">Voltar ao login</a>
+    <p><a href="/foodhub/public/dashboard.php">Ir para o início</a> · <a href="/foodhub/public/logout.php">Sair e entrar com outro usuário</a></p>
 </body>
 </html>

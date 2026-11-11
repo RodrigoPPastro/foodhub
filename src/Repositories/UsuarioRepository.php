@@ -27,15 +27,15 @@ class UsuarioRepository
     }
 
     /**
-     * RF06 — consulta somente usuários comuns por trecho do nome.
+     * RF06 — consulta clientes e funcionários (nunca o Master) por trecho do nome.
      */
     public static function buscarPorNomeSubstring(string $trecho): array
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
-            "SELECT id_usuario, nome_completo, login, email, data_cadastro
+            "SELECT id_usuario, nome_completo, login, email, data_cadastro, perfil
              FROM usuario
-             WHERE perfil = 'comum' AND nome_completo LIKE :trecho
+             WHERE perfil IN ('comum', 'funcionario') AND nome_completo LIKE :trecho
              ORDER BY nome_completo"
         );
         $stmt->execute(['trecho' => '%' . $trecho . '%']);
@@ -43,14 +43,14 @@ class UsuarioRepository
     }
 
     /**
-     * RF06 — exclusão somente de usuário comum.
+     * RF06 — exclusão de cliente ou funcionário (o Master nunca é excluído).
      */
     public static function excluir(int $idUsuario): bool
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             "DELETE FROM usuario
-             WHERE id_usuario = :id AND perfil = 'comum'"
+             WHERE id_usuario = :id AND perfil IN ('comum', 'funcionario')"
         );
         $stmt->execute(['id' => $idUsuario]);
         return $stmt->rowCount() > 0;
