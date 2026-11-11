@@ -7,8 +7,12 @@ require_once __DIR__ . '/../src/Services/CadastroService.php';
 
 SessionService::start();
 
+// Cadastro de funcionário: só quando quem envia é o Master logado
+$modoFuncionario = SessionService::ehMaster() && !empty($_POST['funcionario']);
+$voltar = '/foodhub/public/cadastro.php' . ($modoFuncionario ? '?funcionario=1' : '');
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /foodhub/public/cadastro.php');
+    header('Location: ' . $voltar);
     exit;
 }
 
@@ -80,19 +84,29 @@ if (count(array_filter($respostas2fa, fn($r) => trim($r) !== '')) < 3) {
 if (!empty($erros)) {
     SessionService::setFlash('cadastro_erros', $erros);
     SessionService::setFlash('cadastro_valores', $dados);
-    header('Location: /foodhub/public/cadastro.php');
+    header('Location: ' . $voltar);
     exit;
 }
 
 // --- Tudo certo: usuário + 2FA são gravados em uma única transação ---
 try {
-    CadastroService::cadastrar($dados, $senha, $respostas2fa);
+    $idNovo = CadastroService::cadastrar($dados, $senha, $respostas2fa);
+    if ($modoFuncionario) {
+        require_once __DIR__ . '/../src/Services/PermissaoService.php';
+        PermissaoService::salvar($idNovo, 'funcionario', []);   // começa sem telas; o Master marca em seguida
+    }
 } catch (Throwable $e) {
     SessionService::setFlash('cadastro_erros', [
         'Não foi possível concluir o cadastro. Tente novamente.'
     ]);
     SessionService::setFlash('cadastro_valores', $dados);
-    header('Location: /foodhub/public/cadastro.php');
+    header('Location: ' . $voltar);
+    exit;
+}
+
+if ($modoFuncionario) {
+    // Volta para Usuários com a grade de permissões do novo funcionário já aberta
+    header('Location: /foodhub/public/consulta_usuario.php?permissoes=' . (int) $idNovo);
     exit;
 }
 

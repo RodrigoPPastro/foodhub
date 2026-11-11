@@ -52,4 +52,30 @@ class AuthGuard
             exit;
         }
     }
+
+    /** Somente o cliente do delivery (perfil comum) — ex.: "Meus pedidos". */
+    public static function requireCliente(): void
+    {
+        self::requireLogin();
+
+        if (SessionService::perfilAtual() !== 'comum') {
+            header('Location: /foodhub/public/erro.php?tipo=acesso_negado');
+            exit;
+        }
+    }
+
+    /**
+     * Tela liberada para o Master e para o funcionário que tiver a permissão.
+     * @param string $modulo chave de src/Models/Permissao.php (pedidos, estoque, contas…)
+     */
+    public static function requirePermissao(string $modulo, string $acao = 'ver'): void
+    {
+        self::requireLogin();
+        require_once __DIR__ . '/PermissaoService.php';
+
+        if (!PermissaoService::pode($modulo, $acao)) {
+            header('Location: /foodhub/public/erro.php?tipo=acesso_negado');
+            exit;
+        }
+    }
 }

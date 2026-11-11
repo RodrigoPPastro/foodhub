@@ -21,3 +21,6 @@ Thumbs.db
 # Uploads de teste / arquivos temporários
 /tmp/
 /uploads/temp/
+# Fotos enviadas pelo sistema (mantém só a pasta)
+/public/uploads/produtos/*
+!/public/uploads/produtos/.gitkeep

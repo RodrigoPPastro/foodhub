@@ -27,7 +27,7 @@ class RecuperacaoSenhaService
 
         $usuario = UsuarioRepository::buscarPorLogin($login);
 
-        if ($usuario === null || ($usuario['perfil'] ?? null) !== 'comum') {
+        if ($usuario === null || !in_array($usuario['perfil'] ?? null, ['comum', 'funcionario'], true)) {
             return ['status' => 'recuperacao_indisponivel'];
         }
 
@@ -165,7 +165,7 @@ class RecuperacaoSenhaService
         $idUsuario = (int) $autorizacao['id_usuario'];
         $usuario = UsuarioRepository::buscarPorId($idUsuario);
 
-        if ($usuario === null || ($usuario['perfil'] ?? null) !== 'comum') {
+        if ($usuario === null || !in_array($usuario['perfil'] ?? null, ['comum', 'funcionario'], true)) {
             SessionService::limparRecuperacao();
 
             return [

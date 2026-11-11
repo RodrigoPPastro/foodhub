@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     endereco_completo  VARCHAR(200) NOT NULL,
     login              CHAR(6)      NOT NULL UNIQUE,
     senha_hash         VARCHAR(255) NOT NULL,
-    perfil             ENUM('master','comum') NOT NULL DEFAULT 'comum',
+    perfil             ENUM('master','comum','funcionario') NOT NULL DEFAULT 'comum',
     data_cadastro      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

@@ -1,0 +1,8 @@
+# FOOD HUB — Apache (XAMPP)
+# Abre o sistema pelo index.php e nunca mostra a lista de arquivos das pastas.
+DirectoryIndex index.php
+Options -Indexes
+
+# Pastas internas e arquivos de controle não são acessíveis pelo navegador
+RedirectMatch 404 ^/(.*/)?\.git(/|$)
+RedirectMatch 404 ^/(.*/)?\.gitignore$
