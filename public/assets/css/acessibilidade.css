@@ -58,3 +58,6 @@ html.tema-escuro body:not(.alto-contraste) :is(.k-linha .onde, .k-sub, .k-card .
 html.tema-escuro body:not(.alto-contraste) .k-col { background: rgba(255, 255, 255, .04); }
 html.tema-escuro body:not(.alto-contraste) .k-linha { background: var(--white); border-color: var(--border); }
 html.tema-escuro body:not(.alto-contraste) .k-linha strong, html.tema-escuro body:not(.alto-contraste) .k-linha .valor { color: var(--text); }
+
+/* Tema escuro: dentro da barra lateral o "branco" continua claro (hover e item ativo usam var(--white) como cor de texto) */
+html.tema-escuro body:not(.alto-contraste) .sidebar { --white: #fffaf0; }
