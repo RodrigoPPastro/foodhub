@@ -6,7 +6,12 @@
 --   Autenticação ............... usuario, autenticacao_2fa, log_acesso, usuario_permissao
 --   Cardápio/Estoque ........... categoria, produto, insumo, produto_insumo, movimento_estoque
 --   Pedidos/Delivery ........... mesa, entregador, canal_venda, pedido, item_pedido, notificacao_cliente
---   Financeiro ................. forma_pagamento, pagamento, fechamento_caixa, conta_financeira
+--   Financeiro ................. forma_pagamento, pagamento, fechamento_caixa, conta_financeira,
+--                                garcom, taxa_servico (10% dos garçons)
+--
+-- Este arquivo JÁ INCLUI tudo das migrações (funcionarios, setor_preparo, taxa_garcom).
+-- Quem está começando: importe só ele. As migracao_*.sql servem apenas para atualizar
+-- um banco antigo que já existe, sem perder os dados.
 --
 -- Como usar:   mysql -u root < database/foodhub_completo.sql
 -- Re-executável (IF NOT EXISTS / INSERT IGNORE). Para recriar do zero: DROP DATABASE foodhub;
