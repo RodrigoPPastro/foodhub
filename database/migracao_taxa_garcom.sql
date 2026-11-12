@@ -31,3 +31,11 @@ CREATE TABLE IF NOT EXISTS taxa_servico (
     data_hora   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_taxa_data (data_hora)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Garçom que atende a mesa, escolhido ao lançar o pedido (compatível com MySQL e MariaDB)
+SET @existe := (SELECT COUNT(*) FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pedido' AND COLUMN_NAME = 'id_garcom');
+SET @comando := IF(@existe = 0, 'ALTER TABLE pedido ADD COLUMN id_garcom INT NULL AFTER id_mesa', 'SELECT 1');
+PREPARE passo FROM @comando;
+EXECUTE passo;
+DEALLOCATE PREPARE passo;

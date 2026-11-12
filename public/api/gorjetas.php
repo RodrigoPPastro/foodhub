@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
 }
 if (isset($_GET['garcons'])) {
-    ApiGuard::requirePermissao(['caixa', 'mesas']);   // a tela de mesas lista os garçons ao fechar a conta
+    ApiGuard::requirePermissao(['caixa', 'mesas', 'pedidos']);   // mesas e novo pedido listam os garçons
     ApiGuard::responder(GorjetaController::garcons(empty($_GET['todos'])));
 }
 ApiGuard::requirePermissao('caixa');

@@ -38,6 +38,9 @@ require __DIR__ . '/_layout.php';
                     <input class="fh-input" id="pedMesaNome" maxlength="80" list="nomesDaMesa" placeholder="Ex.: Rodrigo" autocomplete="off">
                     <datalist id="nomesDaMesa"></datalist>
                 </div>
+                <div class="fh-form-group" id="grpMesaGarcom" hidden><label for="pedGarcom">Garçom que atende</label>
+                    <select class="fh-select" id="pedGarcom"></select>
+                    <p class="fh-hint">Ele recebe a taxa de serviço se a conta for fechada com os 10%.</p></div>
                 <div id="grpEntrega" hidden>
                     <div class="fh-form-group"><label for="pedNome">Cliente</label><input class="fh-input" id="pedNome" maxlength="100"></div>
                     <div class="fh-form-group"><label for="pedTel">Telefone (WhatsApp)</label><input class="fh-input" id="pedTel" placeholder="(+55)21-999999999"></div>

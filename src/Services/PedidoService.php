@@ -200,6 +200,7 @@ class PedidoService
             'canal' => $canal,
             'id_usuario_cliente' => null,
             'id_mesa' => $canal === 'mesa' ? (int) ($e['id_mesa'] ?? 0) : null,
+            'id_garcom' => $canal === 'mesa' ? ((int) ($e['id_garcom'] ?? 0) ?: null) : null,
             'nome_cliente' => $e['nome_cliente'] ?? '',
             'telefone_cliente' => $e['telefone_cliente'] ?? '',
             'endereco_entrega' => $e['endereco_entrega'] ?? '',
@@ -357,6 +358,14 @@ class PedidoService
         $endereco = trim((string) ($d['endereco_entrega'] ?? ''));
         $observacao = trim((string) ($d['observacao'] ?? ''));
         $idMesa = $d['id_mesa'] ?? null;
+        // Garçom que atende a mesa (opcional): precisa existir e estar ativo
+        $idGarcomPedido = ($d['canal'] ?? '') === 'mesa' && !empty($d['id_garcom']) ? (int) $d['id_garcom'] : null;
+        if ($idGarcomPedido !== null) {
+            $g = GorjetaRepository::buscarGarcom($idGarcomPedido);
+            if ($g === null || !(int) $g['ativo']) {
+                throw new RegraNegocioException('O garçom escolhido não existe ou está inativo.');
+            }
+        }
 
         if (mb_strlen($nome, 'UTF-8') > 80) {
             throw new RegraNegocioException('O nome do cliente pode ter no máximo 80 caracteres.');
@@ -387,10 +396,10 @@ class PedidoService
         }
 
         $agora = PeriodoService::agora()->format('Y-m-d H:i:s');
-        $idPedido = Transacao::executar(function () use ($d, $canal, $idMesa, $agora, $totalCentavos, $nome, $telefone, $endereco, $observacao, $linhas, $pagamentos, $formaIntegral, $temPreparo, $presencial) {
+        $idPedido = Transacao::executar(function () use ($d, $canal, $idMesa, $idGarcomPedido, $agora, $totalCentavos, $nome, $telefone, $endereco, $observacao, $linhas, $pagamentos, $formaIntegral, $temPreparo, $presencial) {
             $id = PedidoRepository::inserir([
                 'id_usuario_cliente' => $d['id_usuario_cliente'] ?? null,
-                'id_mesa' => $idMesa, 'data_hora' => $agora, 'canal' => $canal,
+                'id_mesa' => $idMesa, 'id_garcom' => $idGarcomPedido, 'data_hora' => $agora, 'canal' => $canal,
                 'plataforma_externa' => $d['plataforma_externa'] ?? null,
                 'id_pedido_externo' => $d['id_pedido_externo'] ?? null,
                 'valor_total' => Dinheiro::decimal($totalCentavos),
@@ -819,6 +828,8 @@ class PedidoService
                 'id_mesa'          => $p['id_mesa'] !== null ? (int) $p['id_mesa'] : null,
                 'id_entregador'    => $p['id_entregador'] !== null ? (int) $p['id_entregador'] : null,
                 'entregador'       => $p['entregador_nome'] ?? null,
+                'id_garcom'        => $p['id_garcom'] !== null ? (int) $p['id_garcom'] : null,
+                'garcom'           => $p['garcom_nome'] ?? null,
                 'cliente'          => $nome !== '' ? $nome : null,
                 'telefone'         => ($p['telefone_cliente'] ?? '') ?: ($p['usuario_telefone'] ?? null),
                 'endereco_entrega' => $p['endereco_entrega'],

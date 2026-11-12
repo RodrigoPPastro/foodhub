@@ -27,6 +27,7 @@
         }).join('');
         if (!p.quitado && p.status !== 'cancelado') { btns += '<button class="btn-fh-gold btn-sm" data-acao="pagar" data-id="' + p.id_pedido + '">Pagar</button>'; }
         var meta = '<span>' + FH.horaBr(p.data_hora) + '</span>';
+        if (p.garcom) { meta += '<span>🍽 ' + FH.esc(p.garcom) + '</span>'; }
         if (p.cliente && !ehMesa) { meta += '<span>' + FH.esc(p.cliente) + '</span>'; }
         if (p.entregador) { meta += '<span>🛵 ' + FH.esc(p.entregador) + '</span>'; }
         if (p.plataforma_externa && p.id_pedido_externo) { meta += '<span>' + FH.esc(p.id_pedido_externo) + '</span>'; }
@@ -195,6 +196,7 @@
         var c = FH.el('pedCanal').value;
         FH.el('grpMesa').hidden = c !== 'mesa';
         FH.el('grpMesaNome').hidden = c !== 'mesa';
+        FH.el('grpMesaGarcom').hidden = c !== 'mesa' || !FH.el('pedGarcom').options.length;
         sugerirNomes();
         FH.el('grpEntrega').hidden = c !== 'delivery_proprio';
     }
@@ -204,6 +206,18 @@
         var nomes = [];
         (m ? m.pedidos : []).forEach(function (p) { if (p.cliente && nomes.indexOf(p.cliente) < 0) { nomes.push(p.cliente); } });
         FH.el('nomesDaMesa').innerHTML = nomes.map(function (n) { return '<option value="' + FH.esc(n) + '">'; }).join('');
+    }
+    /** Garçons ativos para escolher quem atende a mesa (se o usuário não tiver acesso, o campo simplesmente não aparece). */
+    async function carregarGarcons() {
+        try {
+            var lista = await FH.api('api/gorjetas.php?garcons=1');
+            FH.el('pedGarcom').innerHTML = '<option value="">— sem garçom —</option>' + lista.map(function (g) { return '<option value="' + g.id_garcom + '">' + FH.esc(g.nome) + '</option>'; }).join('');
+        } catch (e) { FH.el('pedGarcom').innerHTML = ''; }
+    }
+    /** Se a mesa já tem garçom (pedido anterior), já vem selecionado. */
+    function garcomDaMesa() {
+        var m = mesas.find(function (x) { return String(x.id_mesa) === FH.el('pedMesa').value; });
+        if (FH.el('pedGarcom').options.length) { FH.el('pedGarcom').value = m && m.id_garcom ? String(m.id_garcom) : ''; }
     }
     async function abrirNovo() {
         try {
@@ -215,11 +229,12 @@
         FH.el('pedMesa').innerHTML = mesas.map(function (m) { return '<option value="' + m.id_mesa + '">Mesa ' + m.numero + (m.status === 'ocupada' ? ' (ocupada)' : '') + '</option>'; }).join('');
         ['pedNome', 'pedTel', 'pedEnd', 'pedObs', 'pedMesaNome'].forEach(function (i) { FH.el(i).value = ''; });
         FH.el('pedCanal').value = 'balcao'; FH.el('pedPagarAgora').checked = false; FH.el('boxPagto').hidden = true;
+        await carregarGarcons(); garcomDaMesa();
         ajustarCanal(); desenharItens(); FH.abrirModal('modalPedido');
     }
     FH.el('btnNovoPedido').addEventListener('click', abrirNovo);
     FH.el('pedCanal').addEventListener('change', ajustarCanal);
-    FH.el('pedMesa').addEventListener('change', sugerirNomes);
+    FH.el('pedMesa').addEventListener('change', function () { sugerirNomes(); garcomDaMesa(); });
     FH.el('pedBusca').addEventListener('input', desenharCardapio);
     FH.el('pedCats').addEventListener('click', function (ev) {
         var b = ev.target.closest('[data-cat]'); if (!b) { return; }
@@ -245,7 +260,7 @@
         if (!itens.length) { FH.toast('Escolha pelo menos um item.', 'erro'); return; }
         var canal = FH.el('pedCanal').value;
         var corpo = { acao: 'criar', canal: canal, itens: itens, observacao: FH.el('pedObs').value };
-        if (canal === 'mesa') { corpo.id_mesa = Number(FH.el('pedMesa').value); corpo.nome_cliente = FH.el('pedMesaNome').value; }
+        if (canal === 'mesa') { corpo.id_mesa = Number(FH.el('pedMesa').value); corpo.nome_cliente = FH.el('pedMesaNome').value; corpo.id_garcom = Number(FH.el('pedGarcom').value) || null; }
         if (canal === 'delivery_proprio') { corpo.nome_cliente = FH.el('pedNome').value; corpo.telefone_cliente = FH.el('pedTel').value; corpo.endereco_entrega = FH.el('pedEnd').value; }
         if (FH.el('pedPagarAgora').checked) { corpo.pagamentos = pedUI.pagamentos(); }
         try { var r = await FH.api('api/pedidos.php', { method: 'POST', corpo: corpo }); FH.fecharModal('modalPedido'); FH.toast('Pedido criado.', 'ok'); carregar(); }

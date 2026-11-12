@@ -201,6 +201,16 @@ check($r['sucesso'] && $r['dados']['status'] === 'livre', 'conta + 10% (91,08) d
 check((float) $q('SELECT valor FROM taxa_servico')->fetchColumn() === 8.28, 'taxa de 8,28 registrada para o garçom');
 check((float) $q('SELECT SUM(valor) FROM pagamento WHERE id_pedido = ?', [$pt])->fetchColumn() === 82.8, 'taxa não entra como venda (pagamento do pedido = 82,80)');
 
+echo "== Garçom escolhido no pedido da mesa ==" . PHP_EOL;
+$r = PedidoController::criarManual(['canal' => 'mesa', 'id_mesa' => 4, 'id_garcom' => 1, 'itens' => [['id_produto' => 3, 'quantidade' => 1]]], $MASTER); $pg4 = $r['dados']['id_pedido'];
+check($r['sucesso'] && $r['dados']['id_garcom'] === 1 && $r['dados']['garcom'] === 'Marcos Lima', 'pedido de mesa guarda o garçom que atende');
+$m4 = array_values(array_filter(PedidoController::mesas()['dados'], fn($m) => $m['numero'] === 4))[0];
+check($m4['id_garcom'] === 1 && $m4['garcom'] === 'Marcos Lima', 'a mesa informa o garçom (para já vir selecionado ao fechar a conta)');
+check(!PedidoController::criarManual(['canal' => 'mesa', 'id_mesa' => 4, 'id_garcom' => 999, 'itens' => [['id_produto' => 3, 'quantidade' => 1]]], $MASTER)['sucesso'], 'garçom inexistente é recusado');
+$r = PedidoController::criarManual(['canal' => 'balcao', 'id_garcom' => 1, 'itens' => [['id_produto' => 3, 'quantidade' => 1]]], $MASTER);
+check($r['sucesso'] && $r['dados']['id_garcom'] === null, 'garçom só vale para pedidos de mesa (balcão ignora)');
+PedidoController::mudarStatus(['id_pedido' => $pg4, 'status' => 'cancelado'], $MASTER);
+
 echo "== Relatório e pagamento da taxa dos garçons ==" . PHP_EOL;
 $rel = GorjetaController::relatorio([]);
 check($rel['sucesso'] && $rel['dados']['totais']['total'] == 8.28 && $rel['dados']['totais']['pendente'] == 8.28, 'relatório do dia: taxa 8,28 pendente');

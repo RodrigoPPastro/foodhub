@@ -162,6 +162,7 @@ CREATE TABLE IF NOT EXISTS pedido (
     id_usuario_cliente          INT          NULL,
     id_entregador               INT          NULL,
     id_mesa                     INT          NULL,
+    id_garcom                   INT          NULL,    -- garçom que atende a mesa (recebe a taxa de serviço)
     data_hora                   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_hora_inicio_preparo    DATETIME     NULL,    -- base do destaque de atraso
     canal                       VARCHAR(30)  NOT NULL,
@@ -234,6 +235,8 @@ CREATE TABLE IF NOT EXISTS pagamento (
     INDEX idx_pagamento_data_hora (data_hora),
     INDEX idx_pagamento_pedido (id_pedido)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE pedido ADD COLUMN IF NOT EXISTS id_garcom INT NULL AFTER id_mesa;
 
 -- Taxa de serviço (10% do garçom) cobrada ao fechar a conta de uma mesa.
 -- Não é receita da casa: fica registrada à parte para repasse ao garçom e

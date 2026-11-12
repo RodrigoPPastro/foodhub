@@ -10,22 +10,23 @@ class PedidoRepository
 {
     private const SELECT_BASE =
         'SELECT p.*, m.numero AS mesa_numero, e.nome AS entregador_nome,
-                u.nome_completo AS usuario_nome, u.telefone_celular AS usuario_telefone,
+                u.nome_completo AS usuario_nome, u.telefone_celular AS usuario_telefone, g.nome AS garcom_nome,
                 COALESCE((SELECT SUM(pg.valor) FROM pagamento pg WHERE pg.id_pedido = p.id_pedido), 0) AS valor_pago
          FROM pedido p
          LEFT JOIN mesa m ON m.id_mesa = p.id_mesa
          LEFT JOIN entregador e ON e.id_entregador = p.id_entregador
-         LEFT JOIN usuario u ON u.id_usuario = p.id_usuario_cliente';
+         LEFT JOIN usuario u ON u.id_usuario = p.id_usuario_cliente
+         LEFT JOIN garcom g ON g.id_garcom = p.id_garcom';
 
     public static function inserir(array $d): int
     {
         $pdo = Database::getConnection();
         $pdo->prepare(
-            'INSERT INTO pedido (id_usuario_cliente, id_mesa, data_hora, canal, status, plataforma_externa, id_pedido_externo,
+            'INSERT INTO pedido (id_usuario_cliente, id_mesa, id_garcom, data_hora, canal, status, plataforma_externa, id_pedido_externo,
                                  valor_total, nome_cliente, telefone_cliente, endereco_entrega, observacao)
-             VALUES (:cliente, :mesa, :data_hora, :canal, :status, :plataforma, :externo, :total, :nome, :telefone, :endereco, :obs)'
+             VALUES (:cliente, :mesa, :garcom, :data_hora, :canal, :status, :plataforma, :externo, :total, :nome, :telefone, :endereco, :obs)'
         )->execute([
-            'cliente' => $d['id_usuario_cliente'], 'mesa' => $d['id_mesa'], 'data_hora' => $d['data_hora'],
+            'cliente' => $d['id_usuario_cliente'], 'mesa' => $d['id_mesa'], 'garcom' => $d['id_garcom'] ?? null, 'data_hora' => $d['data_hora'],
             'canal' => $d['canal'], 'status' => PedidoStatus::NOVO,
             'plataforma' => $d['plataforma_externa'], 'externo' => $d['id_pedido_externo'],
             'total' => $d['valor_total'], 'nome' => $d['nome_cliente'], 'telefone' => $d['telefone_cliente'],

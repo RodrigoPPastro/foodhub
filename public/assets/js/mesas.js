@@ -43,7 +43,7 @@
                 '<div>' + m.capacidade + ' lugares</div>' +
                 '<div><span class="fh-badge ' + (ocup ? 'alerta' : 'ativo') + '">' + (ocup ? 'Ocupada' : 'Livre') + '</span></div>' +
                 (ocup ? '<div style="margin-top:.4rem"><strong>' + FH.moeda(m.saldo) + '</strong> a pagar<br><small class="muted">' + m.pedidos.length + ' pedido(s)' +
-                    (nomes(m) ? ' · ' + FH.esc(nomes(m)) : '') + '</small></div>' : '') +
+                    (nomes(m) ? ' · ' + FH.esc(nomes(m)) : '') + '</small>' + (m.garcom ? '<br><small class="muted">🍽 ' + FH.esc(m.garcom) + '</small>' : '') + '</div>' : '') +
                 '<div class="acoes">' + (ocup ? '<button class="btn-fh btn-sm" data-conta="' + m.id_mesa + '">Fechar conta</button>' : '') +
                 '<button class="btn-fh-outline btn-sm" data-ed="' + m.id_mesa + '">Editar</button>' +
                 '<button class="btn-fh-ghost btn-sm" data-ex="' + m.id_mesa + '">Excluir</button></div></div>';
@@ -64,6 +64,7 @@
     }
     function abrirConta(m) {
         atual = m; consumo = m.saldo; FH.el('contaTaxa').checked = false; calcularTotal();
+        if (m.id_garcom) { FH.el('contaGarcom').value = String(m.id_garcom); }   // garçom escolhido no pedido
         FH.el('tituloConta').textContent = 'Conta da mesa ' + m.numero;
         FH.el('contaInfo').textContent = m.pedidos.length + ' pedido(s): ' + m.pedidos.map(rotuloPedido).join(', ') +
             (m.aberta_desde ? ' · aberta às ' + FH.horaBr(m.aberta_desde) : '');

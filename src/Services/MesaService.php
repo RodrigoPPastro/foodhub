@@ -23,8 +23,11 @@ class MesaService
                 $pago += (float) $p['valor_pago'];
                 $pedidos[] = ['id_pedido' => (int) $p['id_pedido'], 'status' => $p['status'], 'valor_total' => (float) $p['valor_total'],
                               'saldo' => $s, 'data_hora' => $p['data_hora'],
-                              'cliente' => trim((string) ($p['nome_cliente'] ?? '')) ?: null];
+                              'cliente' => trim((string) ($p['nome_cliente'] ?? '')) ?: null,
+                              'id_garcom' => $p['id_garcom'] !== null ? (int) $p['id_garcom'] : null, 'garcom' => $p['garcom_nome'] ?? null];
             }
+            // Garçom da mesa = o do pedido mais recente que tiver um garçom escolhido
+            $comGarcom = array_values(array_filter(array_reverse($pedidos), fn($x) => $x['id_garcom'] !== null));
             $status = $pedidos ? 'ocupada' : 'livre';
             if ($m['status'] !== $status) {
                 MesaRepository::definirStatus((int) $m['id_mesa'], $status);
@@ -32,6 +35,7 @@ class MesaService
             $mesas[] = [
                 'id_mesa' => (int) $m['id_mesa'], 'numero' => (int) $m['numero'], 'capacidade' => (int) $m['capacidade'],
                 'status' => $status, 'pedidos' => $pedidos, 'saldo' => round($saldo, 2),
+                'id_garcom' => $comGarcom[0]['id_garcom'] ?? null, 'garcom' => $comGarcom[0]['garcom'] ?? null,
                 'consumo' => self::consumo($abertos), 'total_consumido' => round($consumido, 2), 'ja_pago' => round($pago, 2),
                 'aberta_desde' => $abertos ? $abertos[0]['data_hora'] : null,
             ];

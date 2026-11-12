@@ -28,7 +28,8 @@ if (!class_exists('Database')) {
                         status TEXT, valor_total REAL, id_usuario_cliente INTEGER, id_mesa INTEGER, id_entregador INTEGER,
                         plataforma_externa TEXT, id_pedido_externo TEXT, nome_cliente TEXT, telefone_cliente TEXT,
                         endereco_entrega TEXT, observacao TEXT, estoque_baixado INTEGER DEFAULT 0,
-                        data_hora_inicio_preparo TEXT, sincronizado_status_externo INTEGER DEFAULT 0);
+                        data_hora_inicio_preparo TEXT, sincronizado_status_externo INTEGER DEFAULT 0, id_garcom INTEGER);
+                    CREATE TABLE garcom (id_garcom INTEGER PRIMARY KEY, nome TEXT, ativo INTEGER DEFAULT 1);
                     -- tabelas que o painel de pedidos (dashboard) consulta junto com o pedido
                     CREATE TABLE canal_venda (codigo TEXT PRIMARY KEY, rotulo TEXT, presencial INTEGER, externo INTEGER, ativo INTEGER DEFAULT 1,
                         comissao_percentual REAL DEFAULT 0, prazo_repasse_dias INTEGER DEFAULT 0);
