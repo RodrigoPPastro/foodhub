@@ -86,4 +86,17 @@
     document.addEventListener('fh:contraste', carregar);
     document.addEventListener('fh:tema', carregar);
     carregar(); setInterval(carregar, 60000);
+    /* Botão "Avisos" (só Master): reabre a janela de pendências de estoque e contas a qualquer momento. */
+    (function () {
+        var b = FH.el('btnAvisos');
+        if (!b || window.FH_PERFIL !== 'master') { return; }
+        b.hidden = false;
+        b.addEventListener('click', function () {
+            if (window.FH_abrirAvisos) { window.FH_abrirAvisos(); return; }
+            var sc = document.createElement('script');      // carrega o script de avisos só quando for pedido
+            sc.src = 'assets/js/avisos.js';
+            sc.onload = function () { window.FH_abrirAvisos(); };
+            document.body.appendChild(sc);
+        });
+    })();
 })();

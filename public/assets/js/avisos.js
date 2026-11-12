@@ -81,6 +81,7 @@
     }
 
     async function iniciar() {
+        if (FH.el('modalAvisos')) { return; }   // já está aberta (evita duas janelas)
         try { dados = await FH.api('api/avisos.php'); } catch (e) { return; }   // avisos nunca atrapalham a entrada
         montar();
         // As vozes do navegador às vezes carregam depois da página
@@ -91,5 +92,9 @@
             setTimeout(automatico, 800);
         } else { automatico(); }
     }
-    iniciar();
+    /* Botão "Avisos" do dashboard: abre a janela quando o usuário quiser (sem depender do login). */
+    window.FH_abrirAvisos = function () { falou = false; return iniciar(); };
+    /* Abre sozinha só quando o layout pede (logo após o login: data-auto="1"). */
+    var eu = document.currentScript;
+    if (eu && eu.dataset.auto === '1') { iniciar(); }
 })();

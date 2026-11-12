@@ -23,7 +23,7 @@
 <script src="assets/js/sidebar.js"></script>
 <script src="assets/js/app.js"></script>
 <?php if (SessionService::ehMaster() && !empty($_SESSION['mostrar_avisos'])): unset($_SESSION['mostrar_avisos']); ?>
-<script src="assets/js/avisos.js"></script>
+<script src="assets/js/avisos.js" data-auto="1"></script>
 <?php endif; ?>
 <?php foreach (($layoutScripts ?? []) as $_src): ?>
 <script src="<?= h($_src) ?>"></script>

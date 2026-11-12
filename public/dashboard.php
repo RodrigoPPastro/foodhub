@@ -27,7 +27,7 @@ require __DIR__ . '/_layout.php';
 ?>
 <div class="page-heading">
     <div><h1>Dashboard</h1><p>Visão do dia e dos últimos 7 dias. <span id="atualizadoEm">Carregando…</span></p></div>
-    <div class="acoes"><button type="button" class="btn-fh-outline" id="btnAtualizar">Atualizar</button></div>
+    <div class="acoes"><button type="button" class="btn-fh-outline" id="btnAvisos" hidden>🔔 Avisos</button> <button type="button" class="btn-fh-outline" id="btnAtualizar">Atualizar</button></div>
 </div>
 
 <div id="dashErro" class="fh-alert erro" role="alert" hidden></div>
