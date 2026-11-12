@@ -22,6 +22,7 @@ require_once __DIR__ . '/../src/Controllers/CategoriaController.php';
 require_once __DIR__ . '/../src/Controllers/ProdutoController.php';
 require_once __DIR__ . '/../src/Controllers/InsumoController.php';
 require_once __DIR__ . '/../src/Controllers/PedidoController.php';
+require_once __DIR__ . '/../src/Controllers/GorjetaController.php';
 require_once __DIR__ . '/../src/Controllers/DashboardController.php';
 require_once __DIR__ . '/../src/Controllers/FechamentoCaixaController.php';
 require_once __DIR__ . '/../src/Controllers/ContaController.php';
@@ -184,6 +185,34 @@ check((int) $q('SELECT COUNT(*) FROM pagamento WHERE id_pedido = ?', [$pm])->fet
 $r = PedidoController::fecharContaMesa(['id_mesa' => 3, 'pagamentos' => [['forma' => 'pix', 'valor' => 50], ['forma' => 'credito', 'valor' => '32,80']]], $MASTER);
 check($r['sucesso'] && $r['dados']['status'] === 'livre' && $r['dados']['saldo'] == 0, 'conta dividida em 2 formas quita e libera a mesa');
 check($q('SELECT status FROM pedido WHERE id_pedido = ?', [$pm])->fetchColumn() === 'entregue', 'pedido pronto e quitado vira entregue');
+
+echo "== Taxa de serviço de 10% (garçom) ==" . PHP_EOL;
+$r = PedidoController::criarManual(['canal' => 'mesa', 'id_mesa' => 3, 'itens' => [['id_produto' => 3, 'quantidade' => 1], ['id_produto' => 6, 'quantidade' => 1]]], $MASTER); $pt = $r['dados']['id_pedido'];
+PedidoController::mudarStatus(['id_pedido' => $pt, 'status' => 'em preparo'], $MASTER);
+PedidoController::mudarStatus(['id_pedido' => $pt, 'status' => 'pronto'], $MASTER);
+// conta 82,80 → taxa 8,28 → total 91,08
+$r = PedidoController::fecharContaMesa(['id_mesa' => 3, 'com_taxa' => true, 'id_garcom' => 1, 'pagamentos' => [['forma' => 'pix', 'valor' => 82.8]]], $MASTER);
+check(!$r['sucesso'], 'com taxa, pagar só a conta (82,80) é recusado');
+$r = PedidoController::fecharContaMesa(['id_mesa' => 3, 'com_taxa' => true, 'pagamentos' => [['forma' => 'pix', 'valor' => 91.08]]], $MASTER);
+check(!$r['sucesso'], 'com taxa, é obrigatório informar o garçom');
+check((int) $q('SELECT COUNT(*) FROM taxa_servico')->fetchColumn() === 0, 'recusa não grava taxa (transação revertida)');
+$r = PedidoController::fecharContaMesa(['id_mesa' => 3, 'com_taxa' => true, 'id_garcom' => 1, 'pagamentos' => [['forma' => 'pix', 'valor' => 50], ['forma' => 'dinheiro', 'valor' => '41,08']]], $MASTER);
+check($r['sucesso'] && $r['dados']['status'] === 'livre', 'conta + 10% (91,08) dividida em 2 formas quita a mesa');
+check((float) $q('SELECT valor FROM taxa_servico')->fetchColumn() === 8.28, 'taxa de 8,28 registrada para o garçom');
+check((float) $q('SELECT SUM(valor) FROM pagamento WHERE id_pedido = ?', [$pt])->fetchColumn() === 82.8, 'taxa não entra como venda (pagamento do pedido = 82,80)');
+
+echo "== Relatório e pagamento da taxa dos garçons ==" . PHP_EOL;
+$rel = GorjetaController::relatorio([]);
+check($rel['sucesso'] && $rel['dados']['totais']['total'] == 8.28 && $rel['dados']['totais']['pendente'] == 8.28, 'relatório do dia: taxa 8,28 pendente');
+check($rel['dados']['garcons'][0]['garcom'] === 'Marcos Lima' && $rel['dados']['garcons'][0]['contas'] === 1, 'taxa atribuída ao garçom que atendeu');
+$r = GorjetaController::pagar(['id_garcom' => 2], $MASTER);
+check(!$r['sucesso'], 'garçom sem taxa pendente não pode ser pago');
+$r = GorjetaController::pagar(['id_garcom' => 1], $MASTER);
+check($r['sucesso'] && $r['dados']['pagos'] === 1, 'paga o garçom: taxa marcada como paga');
+$rel = GorjetaController::relatorio([]);
+check($rel['dados']['totais']['pago'] == 8.28 && $rel['dados']['totais']['pendente'] == 0 && $rel['dados']['lancamentos'][0]['status'] === 'pago', 'relatório mostra pago e pendente 0');
+check(!GorjetaController::pagar(['id_garcom' => 1], $MASTER)['sucesso'], 'não paga duas vezes a mesma taxa');
+check(GorjetaController::salvarGarcom(['nome' => 'Rafael Costa'])['sucesso'] && !GorjetaController::salvarGarcom(['nome' => 'Rafael Costa'])['sucesso'], 'cadastra garçom e recusa nome repetido');
 
 echo "== RF20 delivery integrado (webhook) ==" . PHP_EOL;
 $payload = ['plataforma' => 'ifood', 'id_pedido_externo' => 'IF-1001', 'cliente' => ['nome' => 'Ana Souza', 'telefone' => '(+55)21-988887777'],

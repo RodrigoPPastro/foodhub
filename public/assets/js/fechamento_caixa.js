@@ -38,7 +38,18 @@
         el('btnPdf').href = 'fechamento_caixa_pdf.php?data=' + encodeURIComponent(d.data_referencia);
     }
 
+    /* Resumo informativo da taxa de serviço do dia (fica fora do total de vendas). */
+    async function taxaDoDia() {
+        try {
+            var d = el('data').value, r = await FH.api('api/gorjetas.php?de=' + encodeURIComponent(d) + '&ate=' + encodeURIComponent(d));
+            el('txTotal').textContent = FH.moeda(r.totais.total);
+            el('txPaga').textContent = FH.moeda(r.totais.pago);
+            el('txPend').textContent = FH.moeda(r.totais.pendente);
+        } catch (e) { /* bloco informativo: não atrapalha o fechamento */ }
+    }
+
     async function consultar() {
+        taxaDoDia();
         try {
             renderizar(await FH.api(API + '?data=' + encodeURIComponent(el('data').value)));
         } catch (e) {

@@ -111,6 +111,8 @@ if (!function_exists('h')) {
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/dashboard.css">
     <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="assets/css/acessibilidade.css">
+    <script src="assets/js/acessibilidade.js"></script>
     <script>window.FH_PERFIL = <?= json_encode(SessionService::perfilAtual()) ?>; window.FH_PERM = <?= json_encode(PermissaoService::paraNavegador()) ?>;</script>
     <?= $layoutHead ?>
 </head>
@@ -119,6 +121,7 @@ if (!function_exists('h')) {
 <!-- RF27: barra de acessibilidade (contraste + tamanho da fonte) -->
 <div class="acessib-bar" role="toolbar" aria-label="Opções de acessibilidade">
     <span class="ab-label"><?= _icone('acessib') ?> Acessibilidade:</span>
+    <button type="button" id="btnTema" aria-pressed="false" title="Alternar modo escuro">Modo escuro</button>
     <button type="button" id="btnContraste" aria-pressed="false" title="Alternar alto contraste">Alto contraste</button>
     <button type="button" id="btnFonteM" aria-label="Diminuir fonte" title="Diminuir fonte">A−</button>
     <button type="button" id="btnFonteR" aria-label="Tamanho padrão da fonte" title="Restaurar fonte">A</button>
@@ -149,6 +152,7 @@ if (!function_exists('h')) {
                                          ['categorias', 'categorias.php', 'Categorias', 'categorias', 'categorias'],
                                          ['estoque', 'estoque.php', 'Estoque', 'estoque', 'estoque']],
                 'GESTÃO'             => [['caixa', 'fechamento_caixa.php', 'Fechamento de caixa', 'financeiro', 'caixa'],
+                                         ['caixa', 'gorjetas.php', 'Taxa dos garçons (10%)', 'financeiro', 'gorjetas'],
                                          ['contas', 'contas.php', 'Contas a pagar/receber', 'calendario', 'contas'],
                                          ['relatorios', 'relatorios.php', 'Relatórios', 'relatorios', 'relatorios']],
             ];

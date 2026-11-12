@@ -11,12 +11,22 @@ $mensagens = [
 
 $mensagem = $mensagens[$tipo] ?? $mensagens['generico'];
 ?>
-<!-- NOTA PRA DANDARA: estilizar mantendo a identidade visual (modal/toast, não alert()). -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FOOD HUB — Erro</title>
+<link rel="stylesheet" href="assets/css/acessibilidade.css">
+<style>
+    /* Página de erro simples, no tema claro/escuro escolhido pelo usuário */
+    body { margin: 0; min-height: 100vh; display: grid; place-content: center; text-align: center; font-family: "Source Sans 3", Arial, sans-serif; background: #f6efe0; color: #1a1a1a; }
+    h1 { color: #b3161b; margin: 0 0 .5rem; }
+    a { color: #b3161b; font-weight: 600; }
+    html.tema-escuro body { background: #15131a; color: #ece8df; }
+    html.tema-escuro h1, html.tema-escuro a { color: #e7b65c; }
+</style>
+<script src="assets/js/acessibilidade.js"></script>
 </head>
 <body>
     <h1>Ops!</h1>

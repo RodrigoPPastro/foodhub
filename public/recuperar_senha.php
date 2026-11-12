@@ -304,6 +304,8 @@ if ($etapa === 'pergunta' && $pendente === null) {
             }
         }
     </style>
+<link rel="stylesheet" href="assets/css/acessibilidade.css">
+<script src="assets/js/acessibilidade.js"></script>
 </head>
 
 <body>
@@ -461,37 +463,6 @@ if ($etapa === 'pergunta' && $pendente === null) {
         </section>
 
     </main>
-
-    <script>
-        (function () {
-            var root = document.documentElement;
-            var btn = document.getElementById('themeToggle');
-            var saved = null;
-
-            try {
-                saved = localStorage.getItem('foodhub-theme');
-            } catch (e) {}
-
-            function apply(theme) {
-                root.setAttribute('data-theme', theme);
-                btn.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
-            }
-
-            apply(saved === 'dark' ? 'dark' : 'light');
-
-            btn.addEventListener('click', function () {
-                var next = root.getAttribute('data-theme') === 'dark'
-                    ? 'light'
-                    : 'dark';
-
-                apply(next);
-
-                try {
-                    localStorage.setItem('foodhub-theme', next);
-                } catch (e) {}
-            });
-        })();
-    </script>
 
 </body>
 </html>

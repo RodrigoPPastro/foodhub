@@ -136,33 +136,4 @@ window.FH = (function () {
 
 window.fhToast = window.FH.toast; /* compatibilidade com fhToast(msg, tipo) */
 
-/* ── Acessibilidade (RF27): contraste e tamanho da fonte, lembrados entre páginas ───────── */
-(function () {
-    var body = document.body;
-    var btnC = document.getElementById('btnContraste');
-    var btnM = document.getElementById('btnFonteM');
-    var btnP = document.getElementById('btnFonteP');
-    var btnR = document.getElementById('btnFonteR');
-    var tamanho = 100;
-
-    function contraste(ligado) {
-        body.classList.toggle('alto-contraste', ligado);
-        if (btnC) { btnC.classList.toggle('ativo', ligado); btnC.setAttribute('aria-pressed', ligado ? 'true' : 'false'); }
-        try { localStorage.setItem('fh-contraste', ligado ? '1' : '0'); } catch (e) { /* storage indisponível */ }
-        document.dispatchEvent(new CustomEvent('fh:contraste', { detail: ligado }));
-    }
-    function fonte() {
-        document.documentElement.style.fontSize = tamanho + '%';
-        try { localStorage.setItem('fh-fonte', String(tamanho)); } catch (e) { /* idem */ }
-    }
-    try {
-        if (localStorage.getItem('fh-contraste') === '1') { contraste(true); }
-        var t = parseInt(localStorage.getItem('fh-fonte'), 10);
-        if (!isNaN(t)) { tamanho = Math.min(150, Math.max(80, t)); fonte(); }
-    } catch (e) { /* idem */ }
-
-    if (btnC) { btnC.addEventListener('click', function () { contraste(!body.classList.contains('alto-contraste')); }); }
-    if (btnM) { btnM.addEventListener('click', function () { tamanho = Math.max(80, tamanho - 10); fonte(); }); }
-    if (btnP) { btnP.addEventListener('click', function () { tamanho = Math.min(150, tamanho + 10); fonte(); }); }
-    if (btnR) { btnR.addEventListener('click', function () { tamanho = 100; fonte(); }); }
-})();
+/* Acessibilidade (tema, contraste, fonte): ver assets/js/acessibilidade.js, carregado no <head> do layout. */

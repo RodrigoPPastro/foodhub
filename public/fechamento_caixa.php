@@ -43,6 +43,16 @@ require __DIR__ . '/_layout.php';
             <thead><tr><th>Canal</th><th class="num">Pedidos</th><th class="num">Total</th><th class="num">%</th></tr></thead><tbody id="tbCanal"></tbody></table></div></section>
 </div>
 
+<section class="fh-card-inner" id="boxTaxa" aria-label="Taxa de serviço dos garçons">
+    <h2>Taxa de serviço (10%) dos garçons</h2>
+    <div class="fh-grid c3">
+        <div class="metric-card gold"><span>Taxa cobrada no dia</span><strong id="txTotal">—</strong><small>não entra no total de vendas</small></div>
+        <div class="metric-card"><span>Já repassada</span><strong id="txPaga">—</strong><small>paga aos garçons</small></div>
+        <div class="metric-card gold"><span>A repassar</span><strong id="txPend">—</strong><small>separe este valor do caixa</small></div>
+    </div>
+    <p class="fh-hint">Dinheiro físico esperado no caixa = vendas em dinheiro + taxa recebida em dinheiro. O repasse é feito em <a href="gorjetas.php">Taxa dos garçons</a>.</p>
+</section>
+
 <section class="fh-card-inner" id="boxObs">
     <div class="fh-form-group" style="margin:0"><label for="obs">Observações do fechamento</label>
         <textarea id="obs" class="fh-textarea" maxlength="500" placeholder="Ex.: diferença de troco, sangria, ocorrências do dia…"></textarea></div>

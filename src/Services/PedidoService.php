@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../Repositories/PedidoRepository.php';
+require_once __DIR__ . '/../Repositories/GorjetaRepository.php';
 require_once __DIR__ . '/../Repositories/ProdutoRepository.php';
 require_once __DIR__ . '/../Repositories/MesaRepository.php';
 require_once __DIR__ . '/../Repositories/EntregadorRepository.php';
@@ -534,7 +535,21 @@ class PedidoService
      *
      * @param array $pagamentos [{forma, valor}, ...] (um por pessoa/forma)
      */
-    public static function fecharContaMesa(int $idMesa, array $pagamentos, ?int $idUsuario): array
+    /** Percentual da taxa de serviço do garçom (opcional, escolhida ao fechar a conta). */
+    public const TAXA_SERVICO_PERCENTUAL = 10;
+
+    /** Taxa em centavos sobre uma base em centavos (mesma conta no JavaScript da tela). */
+    public static function taxaServico(int $baseCentavos): int
+    {
+        return (int) round($baseCentavos * self::TAXA_SERVICO_PERCENTUAL / 100);
+    }
+
+    /**
+     * Fecha a conta da mesa. Com $comTaxa = true soma 10% de serviço ao total:
+     * o cliente precisa pagar conta + taxa (pagamento integral); a parte que
+     * excede os pedidos é gravada em taxa_servico (para o garçom), e não como venda.
+     */
+    public static function fecharContaMesa(int $idMesa, array $pagamentos, ?int $idUsuario, bool $comTaxa = false, ?int $idGarcom = null): array
     {
         if (MesaRepository::buscar($idMesa) === null) {
             throw new RegraNegocioException('Mesa não encontrada.');
@@ -542,8 +557,15 @@ class PedidoService
         if ($pagamentos === []) {
             throw new RegraNegocioException('Informe ao menos um pagamento.');
         }
+        // A taxa pertence a um garçom: ele precisa existir e estar ativo.
+        if ($comTaxa) {
+            $g = $idGarcom ? GorjetaRepository::buscarGarcom($idGarcom) : null;
+            if ($g === null || !(int) $g['ativo']) {
+                throw new RegraNegocioException('Informe o garçom que atendeu a mesa para cobrar a taxa de serviço.');
+            }
+        }
 
-        Transacao::executar(function () use ($idMesa, $pagamentos, $idUsuario) {
+        Transacao::executar(function () use ($idMesa, $pagamentos, $idUsuario, $comTaxa, $idGarcom) {
             $abertos = PedidoRepository::abertosDaMesa($idMesa);
             if ($abertos === []) {
                 throw new RegraNegocioException('Esta mesa não possui conta em aberto.');
@@ -577,10 +599,21 @@ class PedidoService
                 }
                 unset($saldo);
             }
-            if ($soma > $totalSaldo) {
+            $taxa = $comTaxa ? self::taxaServico($totalSaldo) : 0;
+            if ($comTaxa && $soma !== $totalSaldo + $taxa) {
+                throw new RegraNegocioException(sprintf(
+                    'Com a taxa de serviço de %d%% o total a pagar é %s (conta %s + taxa %s); informado: %s.',
+                    self::TAXA_SERVICO_PERCENTUAL, Dinheiro::formatar($totalSaldo + $taxa),
+                    Dinheiro::formatar($totalSaldo), Dinheiro::formatar($taxa), Dinheiro::formatar($soma)
+                ));
+            }
+            if ($soma > $totalSaldo + $taxa) {
                 throw new RegraNegocioException(sprintf(
                     'O total informado (%s) excede o saldo da conta (%s).', Dinheiro::formatar($soma), Dinheiro::formatar($totalSaldo)
                 ));
+            }
+            if ($taxa > 0) {
+                PedidoRepository::registrarTaxaServico($idMesa, $idUsuario, $idGarcom, $totalSaldo, self::TAXA_SERVICO_PERCENTUAL, $taxa);
             }
 
             foreach ($porPedido as $idPedido => $lista) {

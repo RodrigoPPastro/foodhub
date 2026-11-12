@@ -390,6 +390,8 @@ $tel = fn(string $campo) => htmlspecialchars(preg_replace('/^\(\+55\)/', '', $va
             }
         }
     </style>
+<link rel="stylesheet" href="assets/css/acessibilidade.css">
+<script src="assets/js/acessibilidade.js"></script>
 </head>
 <body>
 
@@ -618,27 +620,6 @@ $tel = fn(string $campo) => htmlspecialchars(preg_replace('/^\(\+55\)/', '', $va
     var form = document.getElementById('formCadastro');
     var $ = function (id) { return document.getElementById(id); };
     var soDigitos = function (s) { return (s || '').replace(/\D/g, ''); };
-
-    /* ---------- Tema ---------- */
-    var html = document.documentElement;
-    var botaoTema = $('alternarTema');
-    var textoTema = $('textoTema');
-
-    function aplicarTema(t) {
-        html.setAttribute('data-bs-theme', t);
-        textoTema.textContent = t === 'dark' ? 'Modo claro' : 'Modo escuro';
-    }
-
-    var salvo = null;
-    try { salvo = localStorage.getItem('foodhub-tema'); } catch (e) {}
-
-    aplicarTema(salvo === 'dark' ? 'dark' : 'light');
-
-    botaoTema.addEventListener('click', function () {
-        var novo = html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-        aplicarTema(novo);
-        try { localStorage.setItem('foodhub-tema', novo); } catch (e) {}
-    });
 
     /* ---------- Máscaras ---------- */
     function fmtCpf(d) {

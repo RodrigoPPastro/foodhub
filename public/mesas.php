@@ -35,16 +35,25 @@ require __DIR__ . '/_layout.php';
             <thead><tr><th class="num">Qtd</th><th>Produto</th><th class="num">Unitário</th><th class="num">Subtotal</th></tr></thead>
             <tbody id="contaItens"></tbody>
         </table></div>
+        <label class="check-linha" style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0">
+            <input type="checkbox" id="contaTaxa"> Incluir taxa de serviço de 10% (garçom)
+        </label>
+        <div class="fh-form-group" id="grupoGarcom" hidden>
+            <label for="contaGarcom">Garçom que atendeu (recebe os 10%)</label>
+            <select class="fh-select" id="contaGarcom"></select>
+        </div>
         <div class="resumo-valores">
             <div><span>Total consumido</span><strong id="contaConsumido">R$ 0,00</strong></div>
             <div id="linhaJaPago" hidden><span>Já pago</span><strong id="contaJaPago">R$ 0,00</strong></div>
-            <div><span>Total em aberto</span><strong id="contaTotal">R$ 0,00</strong></div>
+            <div><span>Total em aberto</span><strong id="contaEmAberto">R$ 0,00</strong></div>
+            <div id="linhaTaxa" hidden><span>Taxa de serviço (10%)</span><strong id="contaTaxaValor">R$ 0,00</strong></div>
+            <div id="linhaTotalPagar" hidden><span>Total a pagar</span><strong id="contaTotal">R$ 0,00</strong></div>
             <div><span>Informado</span><strong id="contaInformado">R$ 0,00</strong></div>
             <div class="forte"><span>Falta</span><strong id="contaFalta">R$ 0,00</strong></div>
         </div>
         <div id="contaPagamentos"></div>
         <button type="button" class="btn-fh-outline btn-sm" id="btnAddPagto">+ Dividir em mais uma forma</button>
-        <p class="fh-hint">A soma das formas de pagamento deve ser igual ao total. O valor é distribuído pelos pedidos mais antigos primeiro.</p>
+        <p class="fh-hint">A soma das formas de pagamento deve ser igual ao total (com a taxa de 10%, o pagamento é integral). O valor é distribuído pelos pedidos mais antigos primeiro.</p>
         <div class="fh-modal-actions">
             <button type="button" class="btn-fh-outline" data-fechar-modal="modalConta">Cancelar</button>
             <button type="button" class="btn-fh-outline" id="btnImprimirConta">🖨 Imprimir conferência</button>

@@ -1,9 +1,27 @@
 /* Tela de mesas (RF22): ocupação, cadastro e fechamento de conta com pagamento dividido. */
 (function () {
     'use strict';
-    var grid = FH.el('gridMesas'), mesas = [], atual = null, total = 0;
+    var grid = FH.el('gridMesas'), mesas = [], atual = null, total = 0, consumo = 0, taxaAtual = 0;
 
     var pg = FH.pagamentoUI({ lista: FH.el('contaPagamentos'), aoMudar: atualizarResumo });
+
+    /* Total = em aberto + (opcional) 10% de serviço; mesma regra do PedidoService::taxaServico. */
+    function calcularTotal() {
+        var comTaxa = FH.el('contaTaxa').checked;
+        taxaAtual = comTaxa ? Math.round(consumo * 100 * 0.10) / 100 : 0;
+        total = Math.round((consumo + taxaAtual) * 100) / 100;
+        FH.el('linhaTaxa').hidden = !comTaxa; FH.el('linhaTotalPagar').hidden = !comTaxa; FH.el('grupoGarcom').hidden = !comTaxa;
+        FH.el('contaEmAberto').textContent = FH.moeda(consumo);
+        FH.el('contaTaxaValor').textContent = FH.moeda(taxaAtual);
+    }
+
+    /* Garçons ativos para escolher quem recebe a taxa de serviço. */
+    async function carregarGarcons() {
+        try {
+            var lista = await FH.api('api/gorjetas.php?garcons=1');
+            FH.el('contaGarcom').innerHTML = lista.map(function (g) { return '<option value="' + g.id_garcom + '">' + FH.esc(g.nome) + '</option>'; }).join('');
+        } catch (e) { /* sem permissão ou sem garçons: a taxa simplesmente não poderá ser escolhida */ }
+    }
 
     function atualizarResumo() {
         var inf = pg.soma(), falta = Math.round((total - inf) * 100) / 100;
@@ -45,7 +63,7 @@
         FH.abrirModal('modalMesa');
     }
     function abrirConta(m) {
-        atual = m; total = m.saldo;
+        atual = m; consumo = m.saldo; FH.el('contaTaxa').checked = false; calcularTotal();
         FH.el('tituloConta').textContent = 'Conta da mesa ' + m.numero;
         FH.el('contaInfo').textContent = m.pedidos.length + ' pedido(s): ' + m.pedidos.map(rotuloPedido).join(', ') +
             (m.aberta_desde ? ' · aberta às ' + FH.horaBr(m.aberta_desde) : '');
@@ -63,7 +81,8 @@
     /* ── Conta impressa (pré-conta para levar à mesa) ─────────────────── */
     var FORMAS = { dinheiro: 'Dinheiro', pix: 'Pix', credito: 'Crédito', debito: 'Débito', vale: 'Vale' };
     /** @param fechada pagamentos já registrados → comprovante "CONTA FECHADA"; sem ele → pré-conta para conferência */
-    function imprimirConta(m, fechada) {
+    function imprimirConta(m, fechada, taxa) {
+        taxa = taxa === undefined ? taxaAtual : taxa;
         var agora = new Date();
         var linhas = m.consumo.map(function (i) {
             return '<tr><td>' + i.quantidade + 'x</td><td>' + FH.esc(i.nome) + '<br><small>' + FH.moeda(i.preco_unitario) + ' un.</small></td><td class="v">' + FH.moeda(i.subtotal) + '</td></tr>';
@@ -79,7 +98,8 @@
             '<table>' + linhas + '</table><hr><table>' +
             '<tr><td>Total consumido</td><td class="v">' + FH.moeda(m.total_consumido) + '</td></tr>' +
             (m.ja_pago > 0 ? '<tr><td>Já pago</td><td class="v">− ' + FH.moeda(m.ja_pago) + '</td></tr>' : '') +
-            '<tr class="tot"><td>' + (fechada ? 'TOTAL PAGO' : 'TOTAL A PAGAR') + '</td><td class="v">' + FH.moeda(m.saldo) + '</td></tr></table>' +
+            (taxa > 0 ? '<tr><td>Taxa de serviço (10%)</td><td class="v">' + FH.moeda(taxa) + '</td></tr>' : '') +
+            '<tr class="tot"><td>' + (fechada ? 'TOTAL PAGO' : 'TOTAL A PAGAR') + '</td><td class="v">' + FH.moeda(Math.round((m.saldo + taxa) * 100) / 100) + '</td></tr></table>' +
             (pags.length ? '<hr><p style="text-align:left">' + (fechada ? 'Pagamento:' : 'Formas informadas:') + '</p><table>' + pags.map(function (p) { return '<tr><td>' + FH.esc(FORMAS[p.forma] || p.forma) + '</td><td class="v">' + FH.moeda(p.valor) + '</td></tr>'; }).join('') + '</table>' : '') +
             (fechada ? '<hr><p><strong>*** PAGO ***</strong></p>' : '') + '<hr><p>Obrigado pela preferência!</p><p><small>Documento sem valor fiscal</small></p>' +
             '<p style="margin-top:10px"><button onclick="window.print()">Imprimir</button></p></body></html>';
@@ -90,17 +110,19 @@
     }
     FH.el('btnImprimirConta').addEventListener('click', function () { if (atual) { imprimirConta(atual); } });
 
+    FH.el('contaTaxa').addEventListener('change', function () { calcularTotal(); pg.reiniciar(total); });
+    carregarGarcons();
     FH.el('btnNovaMesa').addEventListener('click', function () { abrirMesa(null); });
     FH.el('btnAddPagto').addEventListener('click', function () { pg.adicionar('pix', Math.max(0, Math.round((total - pg.soma()) * 100) / 100)); });
     FH.el('btnFecharConta').addEventListener('click', async function () {
-        var mesa = atual, pagos = pg.pagamentos();
+        var mesa = atual, pagos = pg.pagamentos(), comTaxa = FH.el('contaTaxa').checked, taxaPaga = taxaAtual;
         try {
-            await FH.api('api/pedidos.php', { method: 'POST', corpo: { acao: 'fechar_conta', id_mesa: mesa.id_mesa, pagamentos: pagos } });
+            await FH.api('api/pedidos.php', { method: 'POST', corpo: { acao: 'fechar_conta', id_mesa: mesa.id_mesa, com_taxa: comTaxa, id_garcom: comTaxa ? FH.el('contaGarcom').value : null, pagamentos: pagos } });
             FH.fecharModal('modalConta'); FH.toast('Conta da mesa ' + mesa.numero + ' fechada.', 'ok'); carregar();
         } catch (e) { FH.toast(e.message, 'erro'); return; }
         // A comanda fechada (itens + formas de pagamento) fica pronta para imprimir e entregar ao cliente
         if (await FH.confirmar('Conta fechada', 'Mesa ' + mesa.numero + ' liberada. Deseja imprimir a comanda fechada?', 'Imprimir comanda')) {
-            imprimirConta(mesa, pagos);
+            imprimirConta(mesa, pagos, taxaPaga);
         }
     });
     grid.addEventListener('click', async function (ev) {

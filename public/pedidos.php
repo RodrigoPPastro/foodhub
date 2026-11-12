@@ -18,38 +18,45 @@ require __DIR__ . '/_layout.php';
 
 <div class="kanban" id="kanban"><p class="vazio-msg">Carregando…</p></div>
 
-<!-- Novo pedido (balcão, mesa ou delivery próprio por telefone) -->
+<!-- Novo pedido: à esquerda o cardápio com fotos por categoria (clicou na foto, entrou no pedido); à direita o pedido -->
 <div class="fh-overlay" id="modalPedido" role="dialog" aria-modal="true" aria-labelledby="tituloPedido">
-    <form class="fh-modal largo" id="formPedido" novalidate>
-        <h3 id="tituloPedido">Novo pedido</h3>
-        <div class="fh-form-row">
-            <div class="fh-form-group"><label for="pedCanal">Canal *</label>
-                <select class="fh-select" id="pedCanal"><option value="balcao">Balcão</option><option value="mesa">Mesa</option><option value="delivery_proprio">Delivery próprio</option></select></div>
-            <div class="fh-form-group" id="grpMesa" hidden><label for="pedMesa">Mesa *</label><select class="fh-select" id="pedMesa"></select></div>
-            <div class="fh-form-group" id="grpMesaNome" hidden><label for="pedMesaNome">Nome do cliente <span class="muted">(opcional)</span></label>
-                <input class="fh-input" id="pedMesaNome" maxlength="80" list="nomesDaMesa" placeholder="Ex.: Rodrigo" autocomplete="off">
-                <datalist id="nomesDaMesa"></datalist>
-                <p class="fh-hint">Ajuda a identificar de quem é cada pedido na mesa.</p></div>
-        </div>
-        <div id="grpEntrega" hidden>
-            <div class="fh-form-row">
-                <div class="fh-form-group"><label for="pedNome">Cliente</label><input class="fh-input" id="pedNome" maxlength="100"></div>
-                <div class="fh-form-group"><label for="pedTel">Telefone (WhatsApp)</label><input class="fh-input" id="pedTel" placeholder="(+55)21-999999999"></div>
-            </div>
-            <div class="fh-form-group"><label for="pedEnd">Endereço de entrega *</label><input class="fh-input" id="pedEnd" maxlength="255"></div>
-        </div>
-        <p class="fh-label">Itens *</p>
-        <div class="itens-picker" id="pedItens"></div>
-        <div class="fh-form-group" style="margin-top:.8rem"><label for="pedObs">Observação do pedido</label><input class="fh-input" id="pedObs" maxlength="255"></div>
-        <label class="fh-check"><input type="checkbox" id="pedPagarAgora"> Registrar pagamento agora</label>
-        <div id="boxPagto" hidden style="margin-top:.8rem">
-            <div id="pedPagamentos"></div>
-            <button type="button" class="btn-fh-outline btn-sm" id="pedAddPagto">+ Dividir em mais uma forma</button>
-        </div>
-        <div class="resumo-valores"><div class="forte"><span>Total</span><strong id="pedTotal">R$ 0,00</strong></div></div>
-        <div class="fh-modal-actions">
-            <button type="button" class="btn-fh-outline" data-fechar-modal="modalPedido">Cancelar</button>
-            <button type="submit" class="btn-fh">Criar pedido</button>
+    <form class="fh-modal extra" id="formPedido" novalidate>
+        <div class="np-layout">
+            <section class="np-cardapio" aria-label="Cardápio">
+                <h3 id="tituloPedido">Novo pedido</h3>
+                <div class="np-busca"><input type="search" class="fh-input" id="pedBusca" placeholder="Buscar produto..." aria-label="Buscar produto"></div>
+                <div class="np-chips" id="pedCats" role="tablist" aria-label="Categorias"></div>
+                <div class="np-grade" id="pedGrade"></div>
+            </section>
+            <aside class="np-pedido" aria-label="Pedido">
+                <div class="fh-form-row">
+                    <div class="fh-form-group"><label for="pedCanal">Canal *</label>
+                        <select class="fh-select" id="pedCanal"><option value="balcao">Balcão</option><option value="mesa">Mesa</option><option value="delivery_proprio">Delivery próprio</option></select></div>
+                    <div class="fh-form-group" id="grpMesa" hidden><label for="pedMesa">Mesa *</label><select class="fh-select" id="pedMesa"></select></div>
+                </div>
+                <div class="fh-form-group" id="grpMesaNome" hidden><label for="pedMesaNome">Nome do cliente <span class="muted">(opcional)</span></label>
+                    <input class="fh-input" id="pedMesaNome" maxlength="80" list="nomesDaMesa" placeholder="Ex.: Rodrigo" autocomplete="off">
+                    <datalist id="nomesDaMesa"></datalist>
+                </div>
+                <div id="grpEntrega" hidden>
+                    <div class="fh-form-group"><label for="pedNome">Cliente</label><input class="fh-input" id="pedNome" maxlength="100"></div>
+                    <div class="fh-form-group"><label for="pedTel">Telefone (WhatsApp)</label><input class="fh-input" id="pedTel" placeholder="(+55)21-999999999"></div>
+                    <div class="fh-form-group"><label for="pedEnd">Endereço de entrega *</label><input class="fh-input" id="pedEnd" maxlength="255"></div>
+                </div>
+                <p class="fh-label">Itens do pedido</p>
+                <div class="np-itens" id="pedItens" aria-live="polite"></div>
+                <div class="fh-form-group" style="margin-top:.6rem"><label for="pedObs">Observação</label><input class="fh-input" id="pedObs" maxlength="255"></div>
+                <label class="fh-check"><input type="checkbox" id="pedPagarAgora"> Registrar pagamento agora</label>
+                <div id="boxPagto" hidden style="margin-top:.6rem">
+                    <div id="pedPagamentos"></div>
+                    <button type="button" class="btn-fh-outline btn-sm" id="pedAddPagto">+ Dividir em mais uma forma</button>
+                </div>
+                <div class="resumo-valores"><div class="forte"><span>Total</span><strong id="pedTotal">R$ 0,00</strong></div></div>
+                <div class="fh-modal-actions">
+                    <button type="button" class="btn-fh-outline" data-fechar-modal="modalPedido">Cancelar</button>
+                    <button type="submit" class="btn-fh">Criar pedido</button>
+                </div>
+            </aside>
         </div>
     </form>
 </div>

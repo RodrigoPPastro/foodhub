@@ -98,7 +98,7 @@ class PedidoRepository
             $sql .= ' AND p.canal = :canal';
             $params['canal'] = $canal;
         }
-        $stmt = Database::getConnection()->prepare($sql . ' ORDER BY p.data_hora ASC, p.id_pedido ASC LIMIT 400');
+        $stmt = Database::getConnection()->prepare($sql . ' ORDER BY p.data_hora DESC, p.id_pedido DESC LIMIT 400');
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
@@ -187,6 +187,14 @@ class PedidoRepository
             $saldo = round((float) $p['valor_total'] - (float) $p['valor_pago'], 2);
             return $p['status'] !== PedidoStatus::ENTREGUE || $saldo > 0;
         }));
+    }
+
+    /** Grava a taxa de serviço (valores em centavos) para repasse ao garçom. */
+    public static function registrarTaxaServico(int $idMesa, ?int $idUsuario, ?int $idGarcom, int $baseCent, int $percentual, int $taxaCent): void
+    {
+        Database::getConnection()->prepare(
+            'INSERT INTO taxa_servico (id_mesa, id_usuario, id_garcom, base, percentual, valor) VALUES (:m, :u, :g, :b, :p, :v)'
+        )->execute(['m' => $idMesa, 'u' => $idUsuario, 'g' => $idGarcom, 'b' => $baseCent / 100, 'p' => $percentual, 'v' => $taxaCent / 100]);
     }
 
     public static function atualizarStatus(int $id, string $status, ?string $inicioPreparo = null): void

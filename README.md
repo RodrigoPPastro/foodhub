@@ -83,3 +83,12 @@ php tests/financeiro_smoke_test.php   # financeiro (SQLite em memória)
 
 * Os gráficos do dashboard usam Chart.js por CDN (precisa de internet); o resto funciona offline.
 * O token do webhook e a senha do banco devem ser trocados antes de qualquer uso real.
+
+## Novidades desta atualização
+
+* **Acessibilidade em todas as telas (RF27)**: modo escuro, alto contraste e tamanho da fonte, inclusive em login, 2FA, cadastro, recuperação de senha e erro. Script único: `public/assets/js/acessibilidade.js` (preferências em `fh-tema`, `fh-contraste`, `fh-fonte`).
+* **Taxa de serviço de 10% (garçom)**: ao fechar a conta da mesa há a opção *Incluir taxa de serviço de 10%* (escolhe-se o garçom). O pagamento passa a ser conta + 10%, integral. A taxa não é venda: fica em `taxa_servico` e **não entra no total de vendas do fechamento de caixa**.
+* **Taxa dos garçons (menu Gestão, permissão "caixa")**: quanto cada garçom tem a receber por período, botão **Pagar** (marca como repassado) e cadastro de garçons. O fechamento de caixa mostra a taxa cobrada/repassada/a repassar do dia.
+* **Novo pedido com fotos**: categorias em chips, clique na foto para incluir, − / + na lista ao lado, busca por nome.
+* **Quadro de pedidos**: mais novo no topo de cada coluna.
+* Banco já criado? Rode `database/migracao_taxa_garcom.sql` (uma vez, pode repetir sem erro).

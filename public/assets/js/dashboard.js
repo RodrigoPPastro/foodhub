@@ -11,7 +11,7 @@
         if (graficos[idCanvas]) { graficos[idCanvas].destroy(); }
         graficos[idCanvas] = new Chart(FH.el(idCanvas), config);
     }
-    function corTexto() { return document.body.classList.contains('alto-contraste') ? '#ffffff' : '#2b2b2b'; }
+    function corTexto() { return document.body.classList.contains('alto-contraste') || document.documentElement.classList.contains('tema-escuro') ? '#ffffff' : '#2b2b2b'; }
 
     function graficosChart(g) {
         if (typeof Chart === 'undefined') { FH.toast('Os gráficos precisam de internet (Chart.js).', 'info'); return; }
@@ -84,5 +84,6 @@
     }
     FH.el('btnAtualizar').addEventListener('click', carregar);
     document.addEventListener('fh:contraste', carregar);
+    document.addEventListener('fh:tema', carregar);
     carregar(); setInterval(carregar, 60000);
 })();

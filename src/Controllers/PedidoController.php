@@ -51,7 +51,7 @@ class PedidoController
     public static function fecharContaMesa(array $e, ?int $idUsuario): array
     {
         return RespostaController::executar(fn() => PedidoService::fecharContaMesa(
-            (int) ($e['id_mesa'] ?? 0), is_array($e['pagamentos'] ?? null) ? $e['pagamentos'] : [], $idUsuario
+            (int) ($e['id_mesa'] ?? 0), is_array($e['pagamentos'] ?? null) ? $e['pagamentos'] : [], $idUsuario, !empty($e['com_taxa']), (int) ($e['id_garcom'] ?? 0) ?: null
         ));
     }
 

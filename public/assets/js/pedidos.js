@@ -56,7 +56,7 @@
      */
     function colunaEntregue(l) {
         var aCobrar = l.filter(function (p) { return !p.quitado; });
-        var finalizados = l.filter(function (p) { return p.quitado; }).slice().reverse();   // mais recentes primeiro
+        var finalizados = l.filter(function (p) { return p.quitado; });   // a API já traz o mais novo primeiro
         var html = aCobrar.map(cartao).join('');
         if (finalizados.length) {
             html += '<div class="k-sub">Finalizados hoje</div>' + finalizados.slice(0, 5).map(linhaFinalizado).join('') +
@@ -136,12 +136,61 @@
 
     /* ── Novo pedido ──────────────────────────────────────────────── */
     var pedUI = FH.pagamentoUI({ lista: FH.el('pedPagamentos'), aoMudar: function () {} });
+    var prodPed = {}, carrinhoPed = {}, catPed = 0;   // catálogo por id, itens {id: qtd}, categoria escolhida (0 = todas)
+
     function totalPedido() {
         var t = 0;
-        FH.el('pedItens').querySelectorAll('input[data-preco]').forEach(function (i) { t += (Number(i.value) || 0) * Number(i.dataset.preco); });
+        Object.keys(carrinhoPed).forEach(function (id) { t += carrinhoPed[id] * Number(prodPed[id].preco_venda); });
         return Math.round(t * 100) / 100;
     }
-    function atualizarTotal() { FH.el('pedTotal').textContent = FH.moeda(totalPedido()); }
+    function atualizarTotal() {
+        FH.el('pedTotal').textContent = FH.moeda(totalPedido());
+        if (!FH.el('boxPagto').hidden) { pedUI.reiniciar(totalPedido()); }
+    }
+    var ICONE_FOTO = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 3h16v18l-3-2-2.5 2-2.5-2-2.5 2L7 19l-3 2z"/><path d="M8 8h8M8 12h8"/></svg>';
+
+    /* Esquerda: categorias (chips) + grade de fotos. Clique na foto = +1 no pedido. */
+    function desenharCardapio() {
+        var busca = FH.el('pedBusca').value.trim().toLowerCase();
+        FH.el('pedCats').innerHTML = '<button type="button" class="chip ' + (!catPed ? 'ativa' : '') + '" data-cat="0">Todas</button>' + cardapio.map(function (g) {
+            return '<button type="button" class="chip ' + (catPed === g.id_categoria ? 'ativa' : '') + '" data-cat="' + g.id_categoria + '">' + FH.esc(g.categoria) + '</button>';
+        }).join('');
+        var html = '';
+        cardapio.forEach(function (g) {
+            if (catPed && g.id_categoria !== catPed) { return; }
+            var lista = g.produtos.filter(function (p) { return !busca || p.nome.toLowerCase().indexOf(busca) >= 0; });
+            if (!lista.length) { return; }
+            html += '<h4 class="np-titulo">' + FH.esc(g.categoria) + '</h4><div class="np-fotos">' + lista.map(function (p) {
+                var qtd = carrinhoPed[p.id_produto] || 0;
+                var foto = p.foto ? '<img src="' + FH.esc(p.foto) + '" alt="" loading="lazy">' : ICONE_FOTO;
+                return '<button type="button" class="np-prod' + (qtd ? ' no-pedido' : '') + '" data-add="' + p.id_produto + '" aria-label="Adicionar ' + FH.esc(p.nome) + '">' +
+                    (qtd ? '<span class="np-qtd">' + qtd + '</span>' : '') + '<span class="np-foto">' + foto + '</span>' +
+                    '<span class="np-nome">' + FH.esc(p.nome) + '</span><span class="np-preco">' + FH.moeda(p.preco_venda) + '</span></button>';
+            }).join('') + '</div>';
+        });
+        FH.el('pedGrade').innerHTML = html || '<p class="vazio-msg">Nenhum produto encontrado.</p>';
+    }
+
+    /* Direita: itens do pedido com − / + e remover. */
+    function desenharItens() {
+        var ids = Object.keys(carrinhoPed);
+        FH.el('pedItens').innerHTML = ids.length ? ids.map(function (id) {
+            var p = prodPed[id], q = carrinhoPed[id];
+            return '<div class="np-linha"><span class="np-l-nome">' + FH.esc(p.nome) + '<small>' + FH.moeda(p.preco_venda) + ' un.</small></span>' +
+                '<span class="np-l-qtd"><button type="button" data-menos="' + id + '" aria-label="Diminuir ' + FH.esc(p.nome) + '">−</button><b>' + q + '</b>' +
+                '<button type="button" data-mais="' + id + '" aria-label="Aumentar ' + FH.esc(p.nome) + '">+</button></span>' +
+                '<strong class="np-l-sub">' + FH.moeda(q * p.preco_venda) + '</strong>' +
+                '<button type="button" class="np-x" data-rem="' + id + '" aria-label="Remover ' + FH.esc(p.nome) + '">×</button></div>';
+        }).join('') : '<p class="vazio-msg">Clique na foto de um produto para incluir.</p>';
+        atualizarTotal(); desenharCardapio();
+    }
+    function mudarQtd(id, delta) {
+        var q = (carrinhoPed[id] || 0) + delta;
+        if (q > 99) { q = 99; }
+        if (q <= 0) { delete carrinhoPed[id]; } else { carrinhoPed[id] = q; }
+        desenharItens();
+    }
+
     function ajustarCanal() {
         var c = FH.el('pedCanal').value;
         FH.el('grpMesa').hidden = c !== 'mesa';
@@ -161,21 +210,30 @@
             if (!cardapio.length) { cardapio = await FH.api('api/produtos.php?visao=cardapio'); }
             mesas = await FH.api('api/mesas.php');
         } catch (e) { FH.toast(e.message, 'erro'); return; }
-        FH.el('pedItens').innerHTML = cardapio.map(function (g) {
-            return '<strong style="font-size:.8rem;color:var(--ink-soft)">' + FH.esc(g.categoria) + '</strong>' + g.produtos.map(function (p) {
-                return '<div class="item-pick"><div class="nome">' + FH.esc(p.nome) + '<small>' + FH.moeda(p.preco_venda) + '</small></div>' +
-                    '<input type="number" min="0" max="99" value="0" data-id="' + p.id_produto + '" data-preco="' + p.preco_venda + '" aria-label="Quantidade de ' + FH.esc(p.nome) + '"></div>';
-            }).join('');
-        }).join('');
+        prodPed = {}; carrinhoPed = {}; catPed = 0; FH.el('pedBusca').value = '';
+        cardapio.forEach(function (g) { g.produtos.forEach(function (p) { prodPed[p.id_produto] = p; }); });
         FH.el('pedMesa').innerHTML = mesas.map(function (m) { return '<option value="' + m.id_mesa + '">Mesa ' + m.numero + (m.status === 'ocupada' ? ' (ocupada)' : '') + '</option>'; }).join('');
         ['pedNome', 'pedTel', 'pedEnd', 'pedObs', 'pedMesaNome'].forEach(function (i) { FH.el(i).value = ''; });
         FH.el('pedCanal').value = 'balcao'; FH.el('pedPagarAgora').checked = false; FH.el('boxPagto').hidden = true;
-        ajustarCanal(); atualizarTotal(); FH.abrirModal('modalPedido');
+        ajustarCanal(); desenharItens(); FH.abrirModal('modalPedido');
     }
     FH.el('btnNovoPedido').addEventListener('click', abrirNovo);
     FH.el('pedCanal').addEventListener('change', ajustarCanal);
     FH.el('pedMesa').addEventListener('change', sugerirNomes);
-    FH.el('pedItens').addEventListener('input', function () { atualizarTotal(); if (!FH.el('boxPagto').hidden) { pedUI.reiniciar(totalPedido()); } });
+    FH.el('pedBusca').addEventListener('input', desenharCardapio);
+    FH.el('pedCats').addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-cat]'); if (!b) { return; }
+        catPed = Number(b.dataset.cat); desenharCardapio();
+    });
+    FH.el('pedGrade').addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-add]'); if (b) { mudarQtd(b.dataset.add, 1); }
+    });
+    FH.el('pedItens').addEventListener('click', function (ev) {
+        var b = ev.target.closest('button'); if (!b) { return; }
+        if (b.dataset.mais) { mudarQtd(b.dataset.mais, 1); }
+        if (b.dataset.menos) { mudarQtd(b.dataset.menos, -1); }
+        if (b.dataset.rem) { mudarQtd(b.dataset.rem, -999); }
+    });
     FH.el('pedPagarAgora').addEventListener('change', function (e) {
         FH.el('boxPagto').hidden = !e.target.checked;
         if (e.target.checked) { pedUI.reiniciar(totalPedido()); }
@@ -183,8 +241,7 @@
     FH.el('pedAddPagto').addEventListener('click', function () { pedUI.adicionar('pix', Math.max(0, Math.round((totalPedido() - pedUI.soma()) * 100) / 100)); });
     FH.el('formPedido').addEventListener('submit', async function (ev) {
         ev.preventDefault();
-        var itens = [];
-        FH.el('pedItens').querySelectorAll('input[data-id]').forEach(function (i) { var q = Number(i.value) || 0; if (q > 0) { itens.push({ id_produto: Number(i.dataset.id), quantidade: q }); } });
+        var itens = Object.keys(carrinhoPed).map(function (id) { return { id_produto: Number(id), quantidade: carrinhoPed[id] }; });
         if (!itens.length) { FH.toast('Escolha pelo menos um item.', 'erro'); return; }
         var canal = FH.el('pedCanal').value;
         var corpo = { acao: 'criar', canal: canal, itens: itens, observacao: FH.el('pedObs').value };

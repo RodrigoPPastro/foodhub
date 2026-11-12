@@ -114,6 +114,8 @@ $erro = $_GET['erro'] ?? null;
             font-size: .9rem;
         }
     </style>
+<link rel="stylesheet" href="assets/css/acessibilidade.css">
+<script src="assets/js/acessibilidade.js"></script>
 </head>
 <body>
     <button type="button" class="fh-theme" id="themeToggle" aria-label="Alternar tema claro/escuro">Modo escuro</button>
@@ -140,26 +142,5 @@ $erro = $_GET['erro'] ?? null;
 
         <a href="login.php" class="fh-back">Voltar ao login</a>
     </main>
-
-    <script>
-        (function () {
-            var root = document.documentElement;
-            var btn = document.getElementById('themeToggle');
-            var saved = null;
-            try { saved = localStorage.getItem('foodhub-theme'); } catch (e) {}
-
-            function apply(theme) {
-                root.setAttribute('data-theme', theme);
-                btn.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
-            }
-            apply(saved === 'dark' ? 'dark' : 'light');
-
-            btn.addEventListener('click', function () {
-                var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-                apply(next);
-                try { localStorage.setItem('foodhub-theme', next); } catch (e) {}
-            });
-        })();
-    </script>
 </body>
 </html>

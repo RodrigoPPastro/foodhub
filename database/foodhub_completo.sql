@@ -235,6 +235,31 @@ CREATE TABLE IF NOT EXISTS pagamento (
     INDEX idx_pagamento_pedido (id_pedido)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Taxa de serviço (10% do garçom) cobrada ao fechar a conta de uma mesa.
+-- Não é receita da casa: fica registrada à parte para repasse ao garçom e
+-- por isso NÃO entra na tabela pagamento (o fechamento de caixa soma só vendas).
+CREATE TABLE IF NOT EXISTS garcom (
+    id_garcom INT AUTO_INCREMENT PRIMARY KEY,
+    nome      VARCHAR(80) NOT NULL UNIQUE,
+    ativo     TINYINT(1)  NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT IGNORE INTO garcom (nome) VALUES ('Marcos Lima'), ('Juliana Alves');
+
+CREATE TABLE IF NOT EXISTS taxa_servico (
+    id_taxa     INT AUTO_INCREMENT PRIMARY KEY,
+    id_mesa     INT           NOT NULL,
+    id_usuario  INT           NULL,          -- quem fechou a conta no sistema
+    id_garcom   INT           NULL,          -- garçom que atendeu (quem recebe a taxa)
+    status      VARCHAR(10)   NOT NULL DEFAULT 'pendente',   -- pendente | pago (repassado ao garçom)
+    data_pagamento DATETIME   NULL,
+    id_usuario_pagou INT      NULL,
+    base        DECIMAL(10,2) NOT NULL,
+    percentual  DECIMAL(5,2)  NOT NULL,
+    valor       DECIMAL(10,2) NOT NULL,
+    data_hora   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_taxa_data (data_hora)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS fechamento_caixa (
     id_fechamento          INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario_responsavel INT           NULL,

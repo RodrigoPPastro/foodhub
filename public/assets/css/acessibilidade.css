@@ -1,0 +1,60 @@
+/* ============================================================================
+   FOOD HUB — estilos de acessibilidade compartilhados por TODAS as telas
+   1) barra flutuante das telas públicas
+   2) alto contraste genérico (telas públicas/Bootstrap)
+   3) tema escuro do sistema logado (sobrescreve as variáveis de cor)
+   ============================================================================ */
+
+/* 1) Barra flutuante (login, 2FA, cadastro, recuperar senha, erro) */
+.acessib-flutuante {
+    position: fixed; left: 12px; bottom: 12px; top: auto; right: auto; z-index: 3000;
+    height: auto; padding: .35rem .5rem; gap: .35rem; border-radius: 10px;
+    background: #211f25; color: #ddd; font: 600 .78rem/1.2 "Source Sans 3", Arial, sans-serif;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+}
+.acessib-flutuante button { background: transparent; border: 1px solid #777; border-radius: 6px; color: #eee; cursor: pointer; font: inherit; padding: .25rem .55rem; }
+.acessib-flutuante button:hover { border-color: #ccc; color: #fff; }
+.acessib-flutuante button.ativo { border-color: #c99a2e; color: #e7b65c; }
+.acessib-flutuante button:focus-visible { outline: 2px solid #c99a2e; outline-offset: 2px; }
+
+/* 2) Alto contraste genérico (preto, branco e amarelo) para páginas que não usam o app.css */
+body.alto-contraste:not(:has(.app-container)) { background: #000 !important; color: #fff !important; }
+body.alto-contraste:not(:has(.app-container)) :is(h1,h2,h3,h4,h5,p,span,small,strong,label,li,div,legend,td,th,dt,dd) { color: #fff !important; }
+body.alto-contraste:not(:has(.app-container)) :is(main,section,form,.card,.fh-card,.fh-form,.fh-box,.modal-content,[class*="card"],[class*="painel"]) { background: #000 !important; border: 1px solid #fff !important; box-shadow: none !important; }
+body.alto-contraste:not(:has(.app-container)) a { color: #ffd400 !important; text-decoration: underline; }
+body.alto-contraste:not(:has(.app-container)) :is(input,select,textarea,.form-control,.form-select) { background: #000 !important; color: #fff !important; border: 2px solid #fff !important; }
+body.alto-contraste:not(:has(.app-container)) :is(button,.btn):not(.acessib-flutuante button) { background: #ffd400 !important; color: #000 !important; border: 2px solid #ffd400 !important; }
+body.alto-contraste:not(:has(.app-container)) :is(button,.btn) * { color: #000 !important; }
+body.alto-contraste:not(:has(.app-container)) :focus-visible { outline: 3px solid #ffd400 !important; outline-offset: 2px; }
+body.alto-contraste .acessib-flutuante { background: #000; border: 1px solid #fff; }
+body.alto-contraste .acessib-flutuante button { background: #000 !important; color: #ffd400 !important; border: 1px solid #ffd400 !important; }
+
+/* 3) Tema escuro do sistema logado: troca as variáveis de cor usadas por dashboard.css/app.css */
+html.tema-escuro body:not(.alto-contraste) {
+    --cream: #15131a; --white: #1f1c25; --text: #ece8df; --border: #3a3542;
+    --muted: #a29fab; --ink-soft: #bdb9c4; --sidebar: #0e0d11; --sidebar-muted: #8f8b98;
+    --red-soft: #3a1a1d; --gold-soft: #2f2713;
+    --ok-soft: #14301f; --warn-soft: #3a2f0e; --danger-soft: #3d1a1c; --info-soft: #14283f;
+    --ok: #5fcf8b; --warn: #e3b341; --danger: #ff7a7f; --info: #7db7f0;
+    --shadow: none; --shadow-hover: none;
+    color-scheme: dark;
+}
+html.tema-escuro body:not(.alto-contraste) :is(.panel,.metric-card,.fh-card-inner,.fh-modal,.k-col,.k-card,.menu-card,.mesa-card,.ticket,.item-pick,.resumo-valores,.quick-action,.topbar,.chip,.fh-alert,.empty-state,.fh-table td,.fh-table th) { background-color: var(--white); color: var(--text); border-color: var(--border); }
+html.tema-escuro body:not(.alto-contraste) :is(.fh-input,.fh-select,.fh-textarea,.item-pick input,input,select,textarea) { background: #15131a; color: var(--text); border-color: var(--border); }
+html.tema-escuro body:not(.alto-contraste) .fh-table tbody tr:hover td { background: #272330; }
+html.tema-escuro body:not(.alto-contraste) .fh-overlay { background: rgba(0, 0, 0, .65); }
+html.tema-escuro body:not(.alto-contraste) .btn-fh-outline,
+html.tema-escuro body:not(.alto-contraste) .btn-fh-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+html.tema-escuro body:not(.alto-contraste) .topbar-logout { color: var(--text); }
+html.tema-escuro body:not(.alto-contraste) .fh-hint,
+html.tema-escuro body:not(.alto-contraste) .muted { color: var(--muted); }
+html.tema-escuro body:not(.alto-contraste) li { border-color: var(--border) !important; }
+
+/* Tema escuro: textos com cor fixa (cinza/preto) nos cartões do quadro, cozinha e bar */
+html.tema-escuro body:not(.alto-contraste) :is(.k-card, .k-linha, .ticket) { color: var(--text); }
+html.tema-escuro body:not(.alto-contraste) :is(.k-card .itens, .ticket ul, .itens li) { color: var(--text); }
+html.tema-escuro body:not(.alto-contraste) .st-item:not(.ok) { color: var(--warn); }
+html.tema-escuro body:not(.alto-contraste) :is(.k-linha .onde, .k-sub, .k-card .meta, .ticket .meta) { color: var(--muted); }
+html.tema-escuro body:not(.alto-contraste) .k-col { background: rgba(255, 255, 255, .04); }
+html.tema-escuro body:not(.alto-contraste) .k-linha { background: var(--white); border-color: var(--border); }
+html.tema-escuro body:not(.alto-contraste) .k-linha strong, html.tema-escuro body:not(.alto-contraste) .k-linha .valor { color: var(--text); }

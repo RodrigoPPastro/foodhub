@@ -385,6 +385,8 @@ $erro = $_GET['erro'] ?? null;
             }
         }
     </style>
+<link rel="stylesheet" href="assets/css/acessibilidade.css">
+<script src="assets/js/acessibilidade.js"></script>
 </head>
 <body>
 
@@ -479,43 +481,6 @@ $erro = $_GET['erro'] ?? null;
             </div>
         </section>
     </main>
-
-    <script>
-        // Claro é o padrão; a escolha do usuário fica salva no navegador.
-        (function () {
-            var html = document.documentElement;
-            var botao = document.getElementById('alternarTema');
-            var texto = document.getElementById('textoTema');
-
-            function aplicar(tema) {
-                html.setAttribute('data-bs-theme', tema);
-
-                texto.textContent = tema === 'dark'
-                    ? 'Modo claro'
-                    : 'Modo escuro';
-            }
-
-            var salvo = null;
-
-            try {
-                salvo = localStorage.getItem('foodhub-tema');
-            } catch (e) {}
-
-            aplicar(salvo === 'dark' ? 'dark' : 'light');
-
-            botao.addEventListener('click', function () {
-                var novo = html.getAttribute('data-bs-theme') === 'dark'
-                    ? 'light'
-                    : 'dark';
-
-                aplicar(novo);
-
-                try {
-                    localStorage.setItem('foodhub-tema', novo);
-                } catch (e) {}
-            });
-        })();
-    </script>
 
 </body>
 </html>
